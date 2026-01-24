@@ -210,7 +210,7 @@
 
         .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 40px;
         }
 
@@ -287,78 +287,209 @@
             color: white;
             transform: translateY(-5px);
         }
+
+        /* Regional Navigation Bar */
+        .region-nav-container {
+            width: 100%;
+            margin-bottom: 60px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .region-list {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-wrap: wrap;
+        }
+
+        .region-item {
+            position: relative;
+        }
+
+        .region-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .region-btn:hover,
+        .region-btn.active {
+            color: var(--accent);
+        }
+
+        .region-btn.active::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: var(--accent);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .country-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 100;
+            min-width: 200px;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid #eee;
+        }
+
+        .region-item.active .country-dropdown {
+            display: flex;
+            animation: fadeInDown 0.3s ease;
+        }
+
+        .country-link {
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .country-link:hover {
+            background: #f5f5f5;
+            color: var(--accent);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .region-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .country-dropdown {
+                position: static;
+                transform: none;
+                box-shadow: none;
+                border: none;
+                padding-left: 20px;
+                display: none;
+            }
+
+            .region-item.active .country-dropdown {
+                display: flex;
+            }
+
+            .region-btn.active::after {
+                display: none;
+            }
+
+            .region-btn {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <section class="hero-slider"><button class="nav-btn prev" onclick="moveSlide(-1)">&#10094;
+        </button>
+        <div id="slide-container"></div><button class="nav-btn next" onclick="moveSlide(1)">&#10095;
 
-    <section class="hero-slider">
-        <button class="nav-btn prev" onclick="moveSlide(-1)">&#10094;</button>
-        <div id="slide-container"></div>
-        <button class="nav-btn next" onclick="moveSlide(1)">&#10095;</button>
+        </button>
     </section>
-
     <main id="sub-page" class="sub-page">
+        <!-- Regional Navigation -->
+        <nav class="region-nav-container">
+            <ul class="region-list" id="region-nav">
+                <!-- Dynamically populated -->
+            </ul>
+        </nav>
         <h1 id="country-title" style="font-size: 4rem; margin-bottom: 15px;"></h1>
         <div class="city-tabs" id="city-tabs"></div>
-        <div class="category-menu">
-            <button class="cat-link active" onclick="showCategory('attractions')">🏛️ 관광지</button>
-            <button class="cat-link" onclick="showCategory('restaurants')">🍽️ 맛집 & 간식</button>
-            <button class="cat-link" onclick="showCategory('cafes')">☕ 추천 카페</button>
-            <button class="cat-link" onclick="showCategory('activities')">🏃 액티비티</button>
-            <button class="cat-link" onclick="showCategory('hotels')">🏨 가성비 숙소</button>
-        </div>
+        <div class="category-menu"><button class="cat-link active" onclick="showCategory('attractions')">🏛️
+                관광지</button><button class="cat-link" onclick="showCategory('restaurants')">🍽️ 맛집 &
+                간식</button><button class="cat-link" onclick="showCategory('cafes')">☕ 추천 카페</button><button
+                class="cat-link" onclick="showCategory('activities')">🏃 액티비티</button><button class="cat-link"
+                onclick="showCategory('hotels')">🏨 가성비 숙소</button></div>
         <div id="content-display" class="content-grid"></div>
-        <div class="next-dest-container">
-            <button class="next-dest-btn" onclick="scrollToTop()">NEXT DESTINATION</button>
-        </div>
+        <div class="next-dest-container"><button class="next-dest-btn" onclick="scrollToTop()">NEXT
+                DESTINATION</button></div>
     </main>
-
-    <script>
-        const travelData = {
+    <script>const travelData = {
             "호주": {
                 desc: "웅장한 자연과 세련된 시티 라이프의 완벽한 밸런스",
                 cities: {
                     "시드니": {
                         attractions: [
-                            { name: "오페라 하우스", desc: "시드니의 상징. 밤에는 클래식 공연 관람 추천!", img: "./images/australia/sydney/sydney_operahouse.jpg" },
-                            { name: "천문대 언덕", desc: "욜로인영 추천 선셋 명당. 돗자리 지참 필수!", img: "./images/australia/sydney/sydney_observatory.jpg" },
-                            { name: "QVB (퀸 빅토리아 빌딩)", desc: "세상에서 가장 아름다운 쇼핑몰. 어그 쇼핑 추천", img: "./images/australia/sydney/sydney_qvb.jpg" },
-                            { name: "갭 파크 (Gap Park)", desc: "영화 '빠삐용' 촬영지. 절벽과 바다의 조화", img: "./images/australia/sydney/sydney_gap_park.jpg" },
-                            { name: "시 라이프 시드니 아쿠아리움", desc: "대형 수중 터널과 듀공을 만날 수 있는 곳", img: "./images/australia/sydney/sydney_aquarium.jpg" },
-                            { name: "밀슨스 포인트", desc: "하버브릿지를 가장 가까이서 보는 산책로", img: "./images/australia/sydney/sydney_milsens_point.jpg" }
+                            { name: "오페라 하우스", desc: "시드니의 상징. 밤에는 클래식 공연 관람 추천!", img: "./images/asia_aus/australia/sydney/sydney_operahouse.jpg" },
+                            { name: "천문대 언덕", desc: "욜로인영 추천 선셋 명당. 돗자리 지참 필수!", img: "./images/asia_aus/australia/sydney/sydney_observatory.jpg" },
+                            { name: "QVB (퀸 빅토리아 빌딩)", desc: "세상에서 가장 아름다운 쇼핑몰. 어그 쇼핑 추천", img: "./images/asia_aus/australia/sydney/sydney_qvb.jpg" },
+                            { name: "갭 파크 (Gap Park)", desc: "영화 '빠삐용' 촬영지. 절벽과 바다의 조화", img: "./images/asia_aus/australia/sydney/sydney_gap_park.jpg" },
+                            { name: "시 라이프 시드니 아쿠아리움", desc: "대형 수중 터널과 듀공을 만날 수 있는 곳", img: "./images/asia_aus/australia/sydney/sydney_aquarium.jpg" },
+                            { name: "밀슨스 포인트", desc: "하버브릿지를 가장 가까이서 보는 산책로", img: "./images/asia_aus/australia/sydney/sydney_milsens_point.jpg" }
                         ],
                         restaurants: [
-                            { name: "허리케인 그릴 (Hurricane's Grill)", desc: "<b>[메뉴]</b> 포크 립(하프), 고구마 튀김<br><b>[특징]</b> 한국인 필수 코스. 양도 맛도 최고.", img: "./images/australia/sydney/sydney_hurricanes_grill.jpg" },
-                            { name: "챗 타이 (Chat Thai)", desc: "<b>[메뉴]</b> 팟타이(새우), 똠얌꿍<br><b>[특징]</b> 기름지고 짭짤한 인생 팟타이.", img: "./images/australia/sydney/sydney_chat_thai.jpg" },
-                            { name: "니치 (Niche)", desc: "<b>[메뉴]</b> 스파이시 미소 라멘, 교자<br><b>[특징]</b> 느끼함 달래주는 얼큰한 국물.", img: "./images/australia/sydney/sydney_niche.jpg" },
-                            { name: "베티스 버거 (Betty's Burgers)", desc: "<b>[메뉴]</b> 비프 버거 (본다이 비치)<br><b>[특징]</b> 버터 향 가득한 자극적인 맛.", img: "./images/australia/sydney/sydney_betty_burgers.jpg" },
-                            { name: "쉐프 갤러리 (Chefs Gallery)", desc: "<b>[메뉴]</b> 큐브 스테이크, 해산물 볶음면<br><b>[특징]</b> QVB 근처 부드러운 고기 맛집.", img: "./images/australia/sydney/sydney_chefs_gallery.jpg" },
-                            { name: "마키아토 (Macchiato)", desc: "<b>[메뉴]</b> 페퍼로니 화덕 피자<br><b>[특징]</b> 짭짤한 도우와 신선한 토핑.", img: "./images/australia/sydney/sydney_macchiato.jpg" },
-                            { name: "오페라 바 (Opera Bar)", desc: "<b>[메뉴]</b> 깔라마리 튀김, 무알콜 맥주<br><b>[특징]</b> 오페라 하우스 바로 앞에서 뷰를 즐기며 간단히 먹기 좋음.", img: "./images/australia/sydney/sydney_opera_bar.jpg" },
-                            { name: "본다이 아이스버그 클럽", desc: "<b>[메뉴]</b> 아이스 모카<br><b>[특징]</b> 수영장 뷰 보며 당 충전.", img: "./images/australia/sydney/sydney_iceberg_club.jpg" }
+                            { name: "허리케인 그릴 (Hurricane's Grill)", desc: "<b>[메뉴]</b> 포크 립(하프), 고구마 튀김<br><b>[특징]</b> 한국인 필수 코스. 양도 맛도 최고.", img: "./images/asia_aus/australia/sydney/sydney_hurricanes_grill.jpg" },
+                            { name: "챗 타이 (Chat Thai)", desc: "<b>[메뉴]</b> 팟타이(새우), 똠얌꿍<br><b>[특징]</b> 기름지고 짭짤한 인생 팟타이.", img: "./images/asia_aus/australia/sydney/sydney_chat_thai.jpg" },
+                            { name: "니치 (Niche)", desc: "<b>[메뉴]</b> 스파이시 미소 라멘, 교자<br><b>[특징]</b> 느끼함 달래주는 얼큰한 국물.", img: "./images/asia_aus/australia/sydney/sydney_niche.jpg" },
+                            { name: "베티스 버거 (Betty's Burgers)", desc: "<b>[메뉴]</b> 비프 버거 (본다이 비치)<br><b>[특징]</b> 버터 향 가득한 자극적인 맛.", img: "./images/asia_aus/australia/sydney/sydney_betty_burgers.jpg" },
+                            { name: "쉐프 갤러리 (Chefs Gallery)", desc: "<b>[메뉴]</b> 큐브 스테이크, 해산물 볶음면<br><b>[특징]</b> QVB 근처 부드러운 고기 맛집.", img: "./images/asia_aus/australia/sydney/sydney_chefs_gallery.jpg" },
+                            { name: "마키아토 (Macchiato)", desc: "<b>[메뉴]</b> 페퍼로니 화덕 피자<br><b>[특징]</b> 짭짤한 도우와 신선한 토핑.", img: "./images/asia_aus/australia/sydney/sydney_macchiato.jpg" },
+                            { name: "오페라 바 (Opera Bar)", desc: "<b>[메뉴]</b> 깔라마리 튀김, 무알콜 맥주<br><b>[특징]</b> 오페라 하우스 바로 앞에서 뷰를 즐기며 간단히 먹기 좋음.", img: "./images/asia_aus/australia/sydney/sydney_opera_bar.jpg" },
+                            { name: "본다이 아이스버그 클럽", desc: "<b>[메뉴]</b> 아이스 모카<br><b>[특징]</b> 수영장 뷰 보며 당 충전.", img: "./images/asia_aus/australia/sydney/sydney_iceberg_club.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "파라마운트 커피 프로젝트", desc: "감각적인 브런치 맛집. 오션 트라우트 토스트 추천", img: "./images/australia/sydney/sydney_parliament_coffee_project.jpg" },
-                                { name: "오페라 바 (Opera Bar)", desc: "오페라 하우스 뷰와 함께 즐기는 깔라마리 튀김", img: "./images/australia/sydney/sydney_opera_bar.jpg" },
-                                { name: "The Grounds of Alexandria", desc: "동화 같은 정원 분위기. 인생샷 성지", img: "./images/australia/sydney/sydney_the_grounds_of_alexandria.jpg" },
-                                { name: "블랙스타 페이스트리", desc: "시드니 필수 먹거리 '수박 케이크' 원조", img: "./images/australia/sydney/sydney_blackstar_pastries.jpg" }
+                                { name: "파라마운트 커피 프로젝트", desc: "감각적인 브런치 맛집. 오션 트라우트 토스트 추천", img: "./images/asia_aus/australia/sydney/sydney_parliament_coffee_project.jpg" },
+                                { name: "오페라 바 (Opera Bar)", desc: "오페라 하우스 뷰와 함께 즐기는 깔라마리 튀김", img: "./images/asia_aus/australia/sydney/sydney_opera_bar.jpg" },
+                                { name: "The Grounds of Alexandria", desc: "동화 같은 정원 분위기. 인생샷 성지", img: "./images/asia_aus/australia/sydney/sydney_the_grounds_of_alexandria.jpg" },
+                                { name: "블랙스타 페이스트리", desc: "시드니 필수 먹거리 '수박 케이크' 원조", img: "./images/asia_aus/australia/sydney/sydney_blackstar_pastries.jpg" }
                             ],
                             study: [
-                                { name: "싱글 오 (Single O)", desc: "시드니 3대 커피. 바나나 브레드(에스프레소 버터) 필수", img: "./images/australia/sydney/sydney_single_o.jpg" },
-                                { name: "에디션 로스터스", desc: "차분한 일본풍 분위기. 트러플 오믈렛 추천", img: "./images/australia/sydney/sydney_edition_roasters.jpg" },
-                                { name: "캄포스 커피 (Campos)", desc: "뉴타운의 힙한 감성과 피콜로 라떼의 정석", img: "./images/australia/sydney/sydney_campos.jpg" },
-                                { name: "검션 커피 (Gumption)", desc: "스트랜드 아케이드 내 위치. 깊은 라떼 맛", img: "./images/australia/sydney/sydney_gumption.jpg" },
-                                { name: "킹스우드 커피", desc: "가이드 추천 고소한 라떼 명당", img: "./images/australia/sydney/sydney_kingswood_coffee.jpg" }
+                                { name: "싱글 오 (Single O)", desc: "시드니 3대 커피. 바나나 브레드(에스프레소 버터) 필수", img: "./images/asia_aus/australia/sydney/sydney_single_o.jpg" },
+                                { name: "에디션 로스터스", desc: "차분한 일본풍 분위기. 트러플 오믈렛 추천", img: "./images/asia_aus/australia/sydney/sydney_edition_roasters.jpg" },
+                                { name: "캄포스 커피 (Campos)", desc: "뉴타운의 힙한 감성과 피콜로 라떼의 정석", img: "./images/asia_aus/australia/sydney/sydney_campos.jpg" },
+                                { name: "검션 커피 (Gumption)", desc: "스트랜드 아케이드 내 위치. 깊은 라떼 맛", img: "./images/asia_aus/australia/sydney/sydney_gumption.jpg" },
+                                { name: "킹스우드 커피", desc: "가이드 추천 고소한 라떼 명당", img: "./images/asia_aus/australia/sydney/sydney_kingswood_coffee.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "블루마운틴 데이 투어", desc: "세자매봉과 웅장한 대자연을 만끽하는 낮 코스", img: "./images/australia/sydney/blue_mountain_day_tour.jpg" },
-                            { name: "블루마운틴 은하수 투어", desc: "밤하늘을 수놓는 별빛과 은하수를 보는 시네마틱 코스", img: "./images/australia/sydney/blue_mountain_night_tour.jpg" },
-                            { name: "포트스테판 돌핀 크루즈 & 사막 샌딩", desc: "푸른 바다 위 돌고래 관람과 황금빛 사막 썰매를 한 번에!", img: "./images/australia/sydney/port_st_phineas_cruise.jpg" },
-                            { name: "본다이 아이스버그 수영", desc: "바다와 맞닿은 해수풀에서의 특별한 수영 체험", img: "./images/australia/sydney/bondi_iceberg_swimming.jpg" },
-                            { name: "페더데일 동물원 오픈런", desc: "쿼카, 코알라 등 야행성 동물을 가장 활발할 때 만나기", img: "./images/australia/sydney/federdale_zoo_open_run.jpg" }
+                            { name: "블루마운틴 데이 투어", desc: "세자매봉과 웅장한 대자연을 만끽하는 낮 코스", img: "./images/asia_aus/australia/sydney/blue_mountain_day_tour.jpg" },
+                            { name: "블루마운틴 은하수 투어", desc: "밤하늘을 수놓는 별빛과 은하수를 보는 시네마틱 코스", img: "./images/asia_aus/australia/sydney/blue_mountain_night_tour.jpg" },
+                            { name: "포트스테판 돌핀 크루즈 & 사막 샌딩", desc: "푸른 바다 위 돌고래 관람과 황금빛 사막 썰매를 한 번에!", img: "./images/asia_aus/australia/sydney/port_st_phineas_cruise.jpg" },
+                            { name: "본다이 아이스버그 수영", desc: "바다와 맞닿은 해수풀에서의 특별한 수영 체험", img: "./images/asia_aus/australia/sydney/bondi_iceberg_swimming.jpg" },
+                            { name: "페더데일 동물원 오픈런", desc: "쿼카, 코알라 등 야행성 동물을 가장 활발할 때 만나기", img: "./images/asia_aus/australia/sydney/federdale_zoo_open_run.jpg" }
                         ],
                         hotels: [
                             { name: "Song Hotel Sydney", price: "약 18만원", desc: "시내 중심 가성비 1순위 숙소" },
@@ -369,51 +500,75 @@
                         ]
                     },
                     "멜버른": {
-                        attractions: [{ name: "빅토리아 도서관", desc: "아름다운 공부 명당", img: "ml1" }],
-                        restaurants: [
-                            { name: "Hakata Gensuke", desc: "멜버른 1등 라멘 맛집", img: "" },
-                            { name: "Lune Croissanterie", desc: "세계 최고의 크루아상", img: "" }
+                        attractions: [
+                            { name: "빅토리아 도서관", desc: "아름다운 공부 명당", img: "./images/asia_aus/australia/melbourne/state_library.jpg" },
+                            { name: "플린더스 스트리트 역", desc: "멜버른의 아이콘", img: "./images/asia_aus/australia/melbourne/flinders_street_station.jpg" },
+                            { name: "호시어 레인", desc: "미안하다 사랑한다 촬영지", img: "./images/asia_aus/australia/melbourne/hosier_lane.jpg" },
+                            { name: "유레카 스카이덱", desc: "남반구 최고층 전망대", img: "./images/asia_aus/australia/melbourne/eureka_skydeck.jpg" },
+                            { name: "로열 아케이드", desc: "고풍스러운 쇼핑 명소", img: "./images/asia_aus/australia/melbourne/royal_arcade.jpg" }
                         ],
-                        cafes: { vibe: [{ name: "Higher Ground", desc: "창고형 카페" }], study: [{ name: "Patricia", desc: "커피 맛집" }] },
-                        activities: ["그레이트 오션 로드", "펭귄 투어"],
-                        hotels: [{ name: "Ibis Melbourne", price: "약 14만원" }]
+                        restaurants: [
+                            { name: "Hakata Gensuke", desc: "멜버른 1등 라멘 맛집", img: "./images/asia_aus/australia/melbourne/hakata_gensuke.jpg" },
+                            { name: "Lune Croissanterie", desc: "세계 최고의 크루아상(줄 서야 함)", img: "./images/asia_aus/australia/melbourne/lune_croissanterie.jpg" },
+                            { name: "Chin Chin", desc: "힙한 퓨전 타이 레스토랑", img: "./images/asia_aus/australia/melbourne/chin_chin.jpg" },
+                            { name: "Tipo 00", desc: "멜버른 최고의 파스타", img: "./images/asia_aus/australia/melbourne/tipo_00.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [
+                                { name: "Higher Ground", desc: "웅장한 창고형 브런치 카페", img: "./images/asia_aus/australia/melbourne/higher_ground.jpg" },
+                                { name: "Brother Baba Budan", desc: "천장에 의자가 매달린 힙한 카페", img: "./images/asia_aus/australia/melbourne/brother_baba_budan.jpg" }
+                            ],
+                            study: [
+                                { name: "Patricia Coffee Brewers", desc: "서서 마시는 찐 커피 맛집", img: "./images/asia_aus/australia/melbourne/patricia_coffee.jpg" },
+                                { name: "Seven Seeds", desc: "넓고 쾌적한 로스터리 카페", img: "./images/asia_aus/australia/melbourne/seven_seeds.jpg" }
+                            ]
+                        },
+                        activities: ["그레이트 오션 로드 투어", "필립 아일랜드 펭귄 퍼레이드", "퍼핑 빌리 증기기관차", "야라강 크루즈", "퀸 빅토리아 마켓 투어"],
+                        hotels: [
+                            { name: "Ibis Melbourne Central", price: "약 14만원", desc: "위치 깡패 가성비" },
+                            { name: "The Victoria Hotel", price: "약 13만원", desc: "역사적인 가성비 호텔" },
+                            { name: "Atlantis Hotel", price: "약 11만원", desc: "서던 크로스역 인근" },
+                            { name: "Space Hotel", price: "약 5만원", desc: "럭셔리 호스텔" },
+                            { name: "Travelodge Southbank", price: "약 15만원", desc: "강변 산책하기 좋은 곳" }
+                        ]
                     }
                 }
             },
+
             "미국": {
                 desc: "자유와 열정의 대륙, 화려한 스카이라인",
                 cities: {
                     "뉴욕": {
                         attractions: [
-                            { name: "타임스퀘어", desc: "잠들지 않는 도시의 심장", img: "./images/usa/new_york/times_square.jpg" },
-                            { name: "센트럴 파크", desc: "도심 속 거대 녹지 휴식처", img: "./images/usa/new_york/central_park.jpg" },
-                            { name: "자유의 여신상", desc: "미국의 상징적인 기념물", img: "./images/usa/new_york/statue_of_liberty.jpg" },
-                            { name: "엠파이어 스테이트", desc: "클래식한 뉴욕 전망대", img: "./images/usa/new_york/empire_state.jpg" },
-                            { name: "서밋 원 밴더빌트", desc: "몰입형 거울 미러 전망대", img: "./images/usa/new_york/summit_one_vanderbilt.jpg" }
+                            { name: "타임스퀘어", desc: "잠들지 않는 도시의 심장", img: "./images/america/usa/new_york/times_square.jpg" },
+                            { name: "센트럴 파크", desc: "도심 속 거대 녹지 휴식처", img: "./images/america/usa/new_york/central_park.jpg" },
+                            { name: "자유의 여신상", desc: "미국의 상징적인 기념물", img: "./images/america/usa/new_york/statue_of_liberty.jpg" },
+                            { name: "엠파이어 스테이트", desc: "클래식한 뉴욕 전망대", img: "./images/america/usa/new_york/empire_state.jpg" },
+                            { name: "서밋 원 밴더빌트", desc: "몰입형 거울 미러 전망대", img: "./images/america/usa/new_york/summit_one_vanderbilt.jpg" }
                         ],
                         restaurants: [
-                            { name: "Peter Luger Steak House", desc: "뉴욕의 전설적인 스테이크", img: "./images/usa/new_york/peter_luger.jpg" },
-                            { name: "Joe's Pizza", desc: "스파이더맨이 배달하던 그 피자", img: "./images/usa/new_york/joes_pizza.jpg" },
-                            { name: "Shake Shack", desc: "본점에서 즐기는 쉑쉑버거", img: "./images/usa/new_york/shake_shack.jpg" },
-                            { name: "Chelsea Market", desc: "랍스터 플레이스와 타코 맛집", img: "./images/usa/new_york/chelsea_market.jpg" },
-                            { name: "The Halal Guys", desc: "스트리트 푸드의 제왕", img: "./images/usa/new_york/halal_guys.jpg" }
+                            { name: "Peter Luger Steak House", desc: "뉴욕의 전설적인 스테이크", img: "./images/america/usa/new_york/peter_luger.jpg" },
+                            { name: "Joe's Pizza", desc: "스파이더맨이 배달하던 그 피자", img: "./images/america/usa/new_york/joes_pizza.jpg" },
+                            { name: "Shake Shack", desc: "본점에서 즐기는 쉑쉑버거", img: "./images/america/usa/new_york/shake_shack.jpg" },
+                            { name: "Chelsea Market", desc: "랍스터 플레이스와 타코 맛집", img: "./images/america/usa/new_york/chelsea_market.jpg" },
+                            { name: "The Halal Guys", desc: "스트리트 푸드의 제왕", img: "./images/america/usa/new_york/halal_guys.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Stumptown", desc: "그리니치 빌리지의 힙한 감성", img: "./images/usa/new_york/stumptown.jpg" },
-                                { name: "Black Cat LES", desc: "거실 같은 아늑한 분위기", img: "./images/usa/new_york/black_cat_les.jpg" }
+                                { name: "Stumptown", desc: "그리니치 빌리지의 힙한 감성", img: "./images/america/usa/new_york/stumptown.jpg" },
+                                { name: "Black Cat LES", desc: "거실 같은 아늑한 분위기", img: "./images/america/usa/new_york/black_cat_les.jpg" }
                             ],
                             study: [
-                                { name: "Think Coffee", desc: "공부하는 뉴요커들의 성지", img: "./images/usa/new_york/think_coffee.jpg" },
-                                { name: "The Bean", desc: "넓은 좌석과 편안한 작업실", img: "./images/usa/new_york/the_bean.jpg" }
+                                { name: "Think Coffee", desc: "공부하는 뉴요커들의 성지", img: "./images/america/usa/new_york/think_coffee.jpg" },
+                                { name: "The Bean", desc: "넓은 좌석과 편안한 작업실", img: "./images/america/usa/new_york/the_bean.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "브로드웨이 뮤지컬", desc: "세계 최고의 공연 관람", img: "./images/usa/new_york/broadway_musical.jpg" },
-                            { name: "하이라인 파크 걷기", desc: "도심 속 공중 정원 산책", img: "./images/usa/new_york/high_line_park.jpg" },
-                            { name: "스테이튼 아일랜드 페리", desc: "무료로 즐기는 자유의 여신상 뷰", img: "./images/usa/new_york/staten_island_ferry.jpg" },
-                            { name: "메트로폴리탄 미술관", desc: "세계 3대 미술관 투어", img: "./images/usa/new_york/met_museum.jpg" },
-                            { name: "브루클린 브릿지 일몰", desc: "석양을 보며 다리 건너기", img: "./images/usa/new_york/brooklyn_bridge.jpg" }
+                            { name: "브로드웨이 뮤지컬", desc: "세계 최고의 공연 관람", img: "./images/america/usa/new_york/broadway_musical.jpg" },
+                            { name: "하이라인 파크 걷기", desc: "도심 속 공중 정원 산책", img: "./images/america/usa/new_york/high_line_park.jpg" },
+                            { name: "스테이튼 아일랜드 페리", desc: "무료로 즐기는 자유의 여신상 뷰", img: "./images/america/usa/new_york/staten_island_ferry.jpg" },
+                            { name: "메트로폴리탄 미술관", desc: "세계 3대 미술관 투어", img: "./images/america/usa/new_york/met_museum.jpg" },
+                            { name: "브루클린 브릿지 일몰", desc: "석양을 보며 다리 건너기", img: "./images/america/usa/new_york/brooklyn_bridge.jpg" }
                         ],
                         hotels: [
                             { name: "Motto by Hilton", price: "약 19만원", desc: "첼시 중심부 트렌디한 가성비" },
@@ -425,33 +580,33 @@
                     },
                     "워싱턴DC": {
                         attractions: [
-                            { name: "링컨 기념관", desc: "미국 민주주의의 상징", img: "./images/usa/washington_dc/lincoln_memorial.jpg" },
-                            { name: "백악관", desc: "미국 대통령의 관저", img: "./images/usa/washington_dc/white_house.jpg" },
-                            { name: "스미소니언 박물관", desc: "세계 최대 규모의 박물관 단지", img: "./images/usa/washington_dc/smithsonian_museums.jpg" },
-                            { name: "의회 도서관", desc: "세상에서 가장 아름다운 도서관", img: "./images/usa/washington_dc/library_of_congress.jpg" },
-                            { name: "워싱턴 기념탑", desc: "도심의 가장 높은 랜드마크", img: "./images/usa/washington_dc/washington_monument.jpg" }
+                            { name: "링컨 기념관", desc: "미국 민주주의의 상징", img: "./images/america/usa/washington_dc/lincoln_memorial.jpg" },
+                            { name: "백악관", desc: "미국 대통령의 관저", img: "./images/america/usa/washington_dc/white_house.jpg" },
+                            { name: "스미소니언 박물관", desc: "세계 최대 규모의 박물관 단지", img: "./images/america/usa/washington_dc/smithsonian_museums.jpg" },
+                            { name: "의회 도서관", desc: "세상에서 가장 아름다운 도서관", img: "./images/america/usa/washington_dc/library_of_congress.jpg" },
+                            { name: "워싱턴 기념탑", desc: "도심의 가장 높은 랜드마크", img: "./images/america/usa/washington_dc/washington_monument.jpg" }
                         ],
                         restaurants: [
-                            { name: "Old Ebbitt Grill", desc: "백악관 근처 전통의 맛집", img: "./images/usa/washington_dc/old_ebbitt_grill.jpg" },
-                            { name: "Ben's Chili Bowl", desc: "오바마 대통령도 다녀간 핫도그", img: "./images/usa/washington_dc/bens_chili_bowl.jpg" },
-                            { name: "Founding Farmers", desc: "미국 가정식의 정석", img: "./images/usa/washington_dc/founding_farmers.jpg" }
+                            { name: "Old Ebbitt Grill", desc: "백악관 근처 전통의 맛집", img: "./images/america/usa/washington_dc/old_ebbitt_grill.jpg" },
+                            { name: "Ben's Chili Bowl", desc: "오바마 대통령도 다녀간 핫도그", img: "./images/america/usa/washington_dc/bens_chili_bowl.jpg" },
+                            { name: "Founding Farmers", desc: "미국 가정식의 정석", img: "./images/america/usa/washington_dc/founding_farmers.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Baked & Wired", desc: "조지타운 컵케이크 명당", img: "./images/usa/washington_dc/baked_and_wired.jpg" },
-                                { name: "Tryst", desc: "예술적이고 빈티지한 거실 카페", img: "./images/usa/washington_dc/tryst.jpg" }
+                                { name: "Baked & Wired", desc: "조지타운 컵케이크 명당", img: "./images/america/usa/washington_dc/baked_and_wired.jpg" },
+                                { name: "Tryst", desc: "예술적이고 빈티지한 거실 카페", img: "./images/america/usa/washington_dc/tryst.jpg" }
                             ],
                             study: [
-                                { name: "Slipstream", desc: "모던하고 조용한 작업 공간", img: "./images/usa/washington_dc/slipstream.jpg" },
-                                { name: "A Baked Joint", desc: "넓고 쾌적한 샌드위치 카페", img: "./images/usa/washington_dc/a_baked_joint.jpg" }
+                                { name: "Slipstream", desc: "모던하고 조용한 작업 공간", img: "./images/america/usa/washington_dc/slipstream.jpg" },
+                                { name: "A Baked Joint", desc: "넓고 쾌적한 샌드위치 카페", img: "./images/america/usa/washington_dc/a_baked_joint.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "내셔널 몰 도보 투어", desc: "미국의 역사를 걷다", img: "./images/usa/washington_dc/national_mall_tour.jpg" },
-                            { name: "조지타운 수변 산책", desc: "로맨틱한 강변 데이트", img: "./images/usa/washington_dc/georgetown_waterfront.jpg" },
-                            { name: "스미소니언 자연사 박물관", desc: "박물관이 살아있다 촬영지", img: "./images/usa/washington_dc/natural_history_museum.jpg" },
-                            { name: "알링턴 국립묘지 방문", desc: "경건한 추모의 시간", img: "./images/usa/washington_dc/arlington_cemetery.jpg" },
-                            { name: "벚꽃 축제 투어 (3월)", desc: "봄의 워싱턴을 만끽하다", img: "./images/usa/washington_dc/cherry_blossom_festival.jpg" }
+                            { name: "내셔널 몰 도보 투어", desc: "미국의 역사를 걷다", img: "./images/america/usa/washington_dc/national_mall_tour.jpg" },
+                            { name: "조지타운 수변 산책", desc: "로맨틱한 강변 데이트", img: "./images/america/usa/washington_dc/georgetown_waterfront.jpg" },
+                            { name: "스미소니언 자연사 박물관", desc: "박물관이 살아있다 촬영지", img: "./images/america/usa/washington_dc/natural_history_museum.jpg" },
+                            { name: "알링턴 국립묘지 방문", desc: "경건한 추모의 시간", img: "./images/america/usa/washington_dc/arlington_cemetery.jpg" },
+                            { name: "벚꽃 축제 투어 (3월)", desc: "봄의 워싱턴을 만끽하다", img: "./images/america/usa/washington_dc/cherry_blossom_festival.jpg" }
                         ],
                         hotels: [
                             { name: "Motto Washington", price: "약 14만원", desc: "시티 센터 중심 가성비" },
@@ -460,37 +615,39 @@
                             { name: "Arlo DC", price: "약 19만원", desc: "최신 시설의 세련된 숙소" },
                             { name: "Windsor Inn DC", price: "약 11만원", desc: "초저가 깔끔한 비즈니스형" }
                         ]
-                    },
+                    }
+
+                    ,
                     "LA": {
                         attractions: [
-                            { name: "할리우드 사인", desc: "영화의 도시 상징", img: "./images/usa/la/hollywood_sign.jpg" },
-                            { name: "게티 센터", desc: "예술과 건축의 정점", img: "./images/usa/la/getty_center.jpg" },
-                            { name: "산타모니카 피어", desc: "퍼시픽 파크의 낭만", img: "./images/usa/la/santa_monica_pier.jpg" },
-                            { name: "그리피스 천문대", desc: "라라랜드의 그곳", img: "./images/usa/la/griffith_observatory.jpg" },
-                            { name: "유니버설 스튜디오", desc: "할리우드 액션의 세계", img: "./images/usa/la/universal_studios_hollywood.jpg" }
+                            { name: "할리우드 사인", desc: "영화의 도시 상징", img: "./images/america/usa/la/hollywood_sign.jpg" },
+                            { name: "게티 센터", desc: "예술과 건축의 정점", img: "./images/america/usa/la/getty_center.jpg" },
+                            { name: "산타모니카 피어", desc: "퍼시픽 파크의 낭만", img: "./images/america/usa/la/santa_monica_pier.jpg" },
+                            { name: "그리피스 천문대", desc: "라라랜드의 그곳", img: "./images/america/usa/la/griffith_observatory.jpg" },
+                            { name: "유니버설 스튜디오", desc: "할리우드 액션의 세계", img: "./images/america/usa/la/universal_studios_hollywood.jpg" }
                         ],
                         restaurants: [
-                            { name: "In-N-Out Burger", desc: "서부의 자존심 인앤아웃", img: "./images/usa/la/innout_burger.jpg" },
-                            { name: "Pink's Hot Dogs", desc: "할리우드 스타들의 단골집", img: "./images/usa/la/pinks_hot_dogs.jpg" },
-                            { name: "Eggslut", desc: "그랜드 센트럴 마켓 필수 코스", img: "./images/usa/la/eggslut.jpg" },
-                            { name: "BCD Tofu House", desc: "북창동 순두부 본점의 위엄", img: "./images/usa/la/bcd_tofu.jpg" }
+                            { name: "In-N-Out Burger", desc: "서부의 자존심 인앤아웃", img: "./images/america/usa/la/innout_burger.jpg" },
+                            { name: "Pink's Hot Dogs", desc: "할리우드 스타들의 단골집", img: "./images/america/usa/la/pinks_hot_dogs.jpg" },
+                            { name: "Eggslut", desc: "그랜드 센트럴 마켓 필수 코스", img: "./images/america/usa/la/eggslut.jpg" },
+                            { name: "BCD Tofu House", desc: "북창동 순두부 본점의 위엄", img: "./images/america/usa/la/bcd_tofu.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Alchemist Coffee", desc: "감각적인 실험실 컨셉", img: "./images/usa/la/alchemist_coffee.jpg" },
-                                { name: "Pantheon Coffee", desc: "음악과 예술이 있는 공간", img: "./images/usa/la/pantheon_coffee.jpg" }
+                                { name: "Alchemist Coffee", desc: "감각적인 실험실 컨셉", img: "./images/america/usa/la/alchemist_coffee.jpg" },
+                                { name: "Pantheon Coffee", desc: "음악과 예술이 있는 공간", img: "./images/america/usa/la/pantheon_coffee.jpg" }
                             ],
                             study: [
-                                { name: "Coffee MCO", desc: "한인타운 쾌적한 카공 성지", img: "./images/usa/la/coffee_mco.jpg" },
-                                { name: "Archives of Us", desc: "미니멀하고 조용한 집중 명당", img: "./images/usa/la/archives_of_us.jpg" }
+                                { name: "Coffee MCO", desc: "한인타운 쾌적한 카공 성지", img: "./images/america/usa/la/coffee_mco.jpg" },
+                                { name: "Archives of Us", desc: "미니멀하고 조용한 집중 명당", img: "./images/america/usa/la/archives_of_us.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "베니스 비치 산책", desc: "보헤미안 감성의 해변", img: "./images/usa/la/venice_beach.jpg" },
-                            { name: "베벌리 힐즈 드라이브", desc: "럭셔리한 거리 드라이브", img: "./images/usa/la/beverly_hills.jpg" },
-                            { name: "워너 브라더스 투어", desc: "영화 제작 비하인드 탐방", img: "./images/usa/la/warner_bros_tour.jpg" },
-                            { name: "LACMA 조명 앞 사진", desc: "인생샷 필수 코스", img: "./images/usa/la/lacma_lights.jpg" },
-                            { name: "그리피스 파크 하이킹", desc: "LA 전경을 한눈에", img: "./images/usa/la/griffith_park_hiking.jpg" }
+                            { name: "베니스 비치 산책", desc: "보헤미안 감성의 해변", img: "./images/america/usa/la/venice_beach.jpg" },
+                            { name: "베벌리 힐즈 드라이브", desc: "럭셔리한 거리 드라이브", img: "./images/america/usa/la/beverly_hills.jpg" },
+                            { name: "워너 브라더스 투어", desc: "영화 제작 비하인드 탐방", img: "./images/america/usa/la/warner_bros_tour.jpg" },
+                            { name: "LACMA 조명 앞 사진", desc: "인생샷 필수 코스", img: "./images/america/usa/la/lacma_lights.jpg" },
+                            { name: "그리피스 파크 하이킹", desc: "LA 전경을 한눈에", img: "./images/america/usa/la/griffith_park_hiking.jpg" }
                         ],
                         hotels: [
                             { name: "Miami Hotel LA", price: "약 15만원", desc: "깔끔한 로컬 가성비" },
@@ -502,33 +659,33 @@
                     },
                     "올랜도": {
                         attractions: [
-                            { name: "디즈니 월드", desc: "꿈과 희망의 나라", img: "./images/usa/orlando/disney_world.jpg" },
-                            { name: "유니버설 올랜도", desc: "해리포터의 마법 세계", img: "./images/usa/orlando/universal_studios.jpg" },
-                            { name: "씨월드", desc: "해양 생태 체험", img: "./images/usa/orlando/seaworld.jpg" },
-                            { name: "아이콘 파크", desc: "올랜도의 랜드마크 관람차", img: "./images/usa/orlando/icon_park.jpg" },
-                            { name: "케네디 우주 센터", desc: "우주 과학의 중심", img: "./images/usa/orlando/kennedy_space_center.jpg" }
+                            { name: "디즈니 월드", desc: "꿈과 희망의 나라", img: "./images/america/usa/orlando/disney_world.jpg" },
+                            { name: "유니버설 올랜도", desc: "해리포터의 마법 세계", img: "./images/america/usa/orlando/universal_studios.jpg" },
+                            { name: "씨월드", desc: "해양 생태 체험", img: "./images/america/usa/orlando/seaworld.jpg" },
+                            { name: "아이콘 파크", desc: "올랜도의 랜드마크 관람차", img: "./images/america/usa/orlando/icon_park.jpg" },
+                            { name: "케네디 우주 센터", desc: "우주 과학의 중심", img: "./images/america/usa/orlando/kennedy_space_center.jpg" }
                         ],
                         restaurants: [
-                            { name: "Gordon Ramsay Fish & Chips", desc: "고든 램지의 캐주얼 맛집", img: "./images/usa/orlando/fish_and_chips.jpg" },
-                            { name: "Hot Dog Hall of Fame", desc: "유니버설 시티워크 핫도그", img: "./images/usa/orlando/hot_dog_hall_of_fame.jpg" },
-                            { name: "Bubba Gump Shrimp", desc: "영화 포레스트 검프 테마", img: "./images/usa/orlando/bubba_gump.jpg" }
+                            { name: "Gordon Ramsay Fish & Chips", desc: "고든 램지의 캐주얼 맛집", img: "./images/america/usa/orlando/fish_and_chips.jpg" },
+                            { name: "Hot Dog Hall of Fame", desc: "유니버설 시티워크 핫도그", img: "./images/america/usa/orlando/hot_dog_hall_of_fame.jpg" },
+                            { name: "Bubba Gump Shrimp", desc: "영화 포레스트 검프 테마", img: "./images/america/usa/orlando/bubba_gump.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Qreate Coffee", desc: "스튜디오 결합형 창의 공간", img: "./images/usa/orlando/qreate_coffee.jpg" },
-                                { name: "Craft & Common", desc: "모던한 인테리어 분위기", img: "./images/usa/orlando/craft_and_common.jpg" }
+                                { name: "Qreate Coffee", desc: "스튜디오 결합형 창의 공간", img: "./images/america/usa/orlando/qreate_coffee.jpg" },
+                                { name: "Craft & Common", desc: "모던한 인테리어 분위기", img: "./images/america/usa/orlando/craft_and_common.jpg" }
                             ],
                             study: [
-                                { name: "Haan Coffee", desc: "한인타운 인기 카공 카페", img: "./images/usa/orlando/haan_coffee.jpg" },
-                                { name: "SnowBean", desc: "조용히 작업하기 좋은 곳", img: "./images/usa/orlando/snowbean.jpg" }
+                                { name: "Haan Coffee", desc: "한인타운 인기 카공 카페", img: "./images/america/usa/orlando/haan_coffee.jpg" },
+                                { name: "SnowBean", desc: "조용히 작업하기 좋은 곳", img: "./images/america/usa/orlando/snowbean.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "에어보트 악어 투어", desc: "플로리다 늪지대 탐험", img: "./images/usa/orlando/airboat_tour.jpg" },
-                            { name: "아울렛 쇼핑", desc: "미국 최고의 쇼핑 천국", img: "./images/usa/orlando/outlet_shopping.jpg" },
-                            { name: "디즈니 야간 불꽃쇼", desc: "환상적인 불꽃의 향연", img: "./images/usa/orlando/disney_fireworks.jpg" },
-                            { name: "유니버설 워터파크", desc: "볼케이노 베이의 스릴", img: "./images/usa/orlando/volcano_bay.jpg" },
-                            { name: "빌드어베어 체험", desc: "나만의 인형 만들기", img: "./images/usa/orlando/build_a_bear.jpg" }
+                            { name: "에어보트 악어 투어", desc: "플로리다 늪지대 탐험", img: "./images/america/usa/orlando/airboat_tour.jpg" },
+                            { name: "아울렛 쇼핑", desc: "미국 최고의 쇼핑 천국", img: "./images/america/usa/orlando/outlet_shopping.jpg" },
+                            { name: "디즈니 야간 불꽃쇼", desc: "환상적인 불꽃의 향연", img: "./images/america/usa/orlando/disney_fireworks.jpg" },
+                            { name: "유니버설 워터파크", desc: "볼케이노 베이의 스릴", img: "./images/america/usa/orlando/volcano_bay.jpg" },
+                            { name: "빌드어베어 체험", desc: "나만의 인형 만들기", img: "./images/america/usa/orlando/build_a_bear.jpg" }
                         ],
                         hotels: [
                             { name: "La Quinta Inn", price: "약 10만원", desc: "공항 인접 안정적 체인" },
@@ -537,37 +694,39 @@
                             { name: "Pestana Suites", price: "약 15만원", desc: "디즈니 인근 가성비 킹" },
                             { name: "Courtyard Orlando", price: "약 18만원", desc: "쾌적한 시설의 비즈니스형" }
                         ]
-                    },
+                    }
+
+                    ,
                     "라스베가스": {
                         attractions: [
-                            { name: "라스베가스 스트립", desc: "세계 최대의 엔터테인먼트", img: "./images/usa/las_vegas/las_vegas_strip.jpg" },
-                            { name: "프리몬트 스트리트", desc: "올드 베가스의 화려한 전광판", img: "./images/usa/las_vegas/fremont_street.jpg" },
-                            { name: "벨라지오 분수", desc: "무료 분수쇼의 감동", img: "./images/usa/las_vegas/bellagio_fountain.jpg" },
-                            { name: "하이 롤러", desc: "세계 최고층 대관람차", img: "./images/usa/las_vegas/high_roller.jpg" },
-                            { name: "MSG 스피어", desc: "지구상 최대 구형 건축물", img: "./images/usa/las_vegas/msg_sphere.jpg" }
+                            { name: "라스베가스 스트립", desc: "세계 최대의 엔터테인먼트", img: "./images/america/usa/las_vegas/las_vegas_strip.jpg" },
+                            { name: "프리몬트 스트리트", desc: "올드 베가스의 화려한 전광판", img: "./images/america/usa/las_vegas/fremont_street.jpg" },
+                            { name: "벨라지오 분수", desc: "무료 분수쇼의 감동", img: "./images/america/usa/las_vegas/bellagio_fountain.jpg" },
+                            { name: "하이 롤러", desc: "세계 최고층 대관람차", img: "./images/america/usa/las_vegas/high_roller.jpg" },
+                            { name: "MSG 스피어", desc: "지구상 최대 구형 건축물", img: "./images/america/usa/las_vegas/msg_sphere.jpg" }
                         ],
                         restaurants: [
-                            { name: "Bacchanal Buffet", desc: "라스베가스 1등 뷔페", img: "./images/usa/las_vegas/bacchanal_buffet.jpg" },
-                            { name: "Gordon Ramsay Burger", desc: "헬스 키친 버거", img: "./images/usa/las_vegas/gordon_ramsay_burger.jpg" },
-                            { name: "Earl of Sandwich", desc: "가성비 최고의 샌드위치", img: "./images/usa/las_vegas/earl_of_sandwich.jpg" },
-                            { name: "In-N-Out Burger", desc: "스트립 근처 야식 필수", img: "./images/usa/las_vegas/innout_vegas.jpg" }
+                            { name: "Bacchanal Buffet", desc: "라스베가스 1등 뷔페", img: "./images/america/usa/las_vegas/bacchanal_buffet.jpg" },
+                            { name: "Gordon Ramsay Burger", desc: "헬스 키친 버거", img: "./images/america/usa/las_vegas/gordon_ramsay_burger.jpg" },
+                            { name: "Earl of Sandwich", desc: "가성비 최고의 샌드위치", img: "./images/america/usa/las_vegas/earl_of_sandwich.jpg" },
+                            { name: "In-N-Out Burger", desc: "스트립 근처 야식 필수", img: "./images/america/usa/las_vegas/innout_vegas.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Gäbi Coffee", desc: "차이나타운 몽환적 디자인", img: "./images/usa/las_vegas/gabi_coffee.jpg" },
-                                { name: "Mothership Coffee", desc: "인더스트리얼 감성 로스터리", img: "./images/usa/las_vegas/mothership_coffee.jpg" }
+                                { name: "Gäbi Coffee", desc: "차이나타운 몽환적 디자인", img: "./images/america/usa/las_vegas/gabi_coffee.jpg" },
+                                { name: "Mothership Coffee", desc: "인더스트리얼 감성 로스터리", img: "./images/america/usa/las_vegas/mothership_coffee.jpg" }
                             ],
                             study: [
-                                { name: "Capital One Cafe", desc: "은행 결합형 최고 집중 공간", img: "./images/usa/las_vegas/capital_one_cafe.jpg" },
-                                { name: "Writer's Block", desc: "서점 속 조용한 커피 향", img: "./images/usa/las_vegas/writers_block.jpg" }
+                                { name: "Capital One Cafe", desc: "은행 결합형 최고 집중 공간", img: "./images/america/usa/las_vegas/capital_one_cafe.jpg" },
+                                { name: "Writer's Block", desc: "서점 속 조용한 커피 향", img: "./images/america/usa/las_vegas/writers_block.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "태양의 서커스 오 쇼", desc: "물 위에서 펼쳐지는 환상", img: "./images/usa/las_vegas/o_show.jpg" },
-                            { name: "그랜드 캐년 데이 투어", desc: "죽기 전에 가봐야 할 곳", img: "./images/usa/las_vegas/grand_canyon_tour.jpg" },
-                            { name: "레드락 캐년 드라이브", desc: "붉은 암석의 장관", img: "./images/usa/las_vegas/red_rock_canyon.jpg" },
-                            { name: "네온 박물관 야간 투어", desc: "라스베가스의 역사 투어", img: "./images/usa/las_vegas/neon_museum.jpg" },
-                            { name: "카지노 호텔 투어", desc: "각양각색 호텔 구경", img: "./images/usa/las_vegas/casino_hotel_tour.jpg" }
+                            { name: "태양의 서커스 오 쇼", desc: "물 위에서 펼쳐지는 환상", img: "./images/america/usa/las_vegas/o_show.jpg" },
+                            { name: "그랜드 캐년 데이 투어", desc: "죽기 전에 가봐야 할 곳", img: "./images/america/usa/las_vegas/grand_canyon_tour.jpg" },
+                            { name: "레드락 캐년 드라이브", desc: "붉은 암석의 장관", img: "./images/america/usa/las_vegas/red_rock_canyon.jpg" },
+                            { name: "네온 박물관 야간 투어", desc: "라스베가스의 역사 투어", img: "./images/america/usa/las_vegas/neon_museum.jpg" },
+                            { name: "카지노 호텔 투어", desc: "각양각색 호텔 구경", img: "./images/america/usa/las_vegas/casino_hotel_tour.jpg" }
                         ],
                         hotels: [
                             { name: "Paris Las Vegas", price: "약 16만원", desc: "스트립 중심부 최고 위치" },
@@ -579,33 +738,33 @@
                     },
                     "샌프란시스코": {
                         attractions: [
-                            { name: "금문교", desc: "안개 속의 붉은 다리", img: "./images/usa/san_francisco/golden_gate_bridge.jpg" },
-                            { name: "알카트라즈 섬", desc: "전설적인 감옥 섬 투어", img: "./images/usa/san_francisco/alcatraz.jpg" },
-                            { name: "피어 39", desc: "바다사자와 활기찬 부두", img: "./images/usa/san_francisco/pier_39.jpg" },
-                            { name: "롬바드 스트리트", desc: "세계에서 가장 구불구불한 길", img: "./images/usa/san_francisco/lombard_street.jpg" },
-                            { name: "금문교 공원", desc: "거대한 도심 공원", img: "./images/usa/san_francisco/golden_gate_park.jpg" }
+                            { name: "금문교", desc: "안개 속의 붉은 다리", img: "./images/america/usa/san_francisco/golden_gate_bridge.jpg" },
+                            { name: "알카트라즈 섬", desc: "전설적인 감옥 섬 투어", img: "./images/america/usa/san_francisco/alcatraz.jpg" },
+                            { name: "피어 39", desc: "바다사자와 활기찬 부두", img: "./images/america/usa/san_francisco/pier_39.jpg" },
+                            { name: "롬바드 스트리트", desc: "세계에서 가장 구불구불한 길", img: "./images/america/usa/san_francisco/lombard_street.jpg" },
+                            { name: "금문교 공원", desc: "거대한 도심 공원", img: "./images/america/usa/san_francisco/golden_gate_park.jpg" }
                         ],
                         restaurants: [
-                            { name: "Boudin Bakery", desc: "사워도우 클램 차우더", img: "./images/usa/san_francisco/boudin_bakery.jpg" },
-                            { name: "Super Duper Burgers", desc: "샌프란시스코 인생 버거", img: "./images/usa/san_francisco/super_duper_burgers.jpg" },
-                            { name: "Hog Island Oyster", desc: "페리 빌딩 신선한 굴", img: "./images/usa/san_francisco/hog_island_oyster.jpg" }
+                            { name: "Boudin Bakery", desc: "사워도우 클램 차우더", img: "./images/america/usa/san_francisco/boudin_bakery.jpg" },
+                            { name: "Super Duper Burgers", desc: "샌프란시스코 인생 버거", img: "./images/america/usa/san_francisco/super_duper_burgers.jpg" },
+                            { name: "Hog Island Oyster", desc: "페리 빌딩 신선한 굴", img: "./images/america/usa/san_francisco/hog_island_oyster.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Saint Frank", desc: "러시안 힐 밝은 감성", img: "./images/usa/san_francisco/saint_frank.jpg" },
-                                { name: "Flywheel Coffee", desc: "헤이트 애슈버리 로스터리", img: "./images/usa/san_francisco/flywheel_coffee.jpg" }
+                                { name: "Saint Frank", desc: "러시안 힐 밝은 감성", img: "./images/america/usa/san_francisco/saint_frank.jpg" },
+                                { name: "Flywheel Coffee", desc: "헤이트 애슈버리 로스터리", img: "./images/america/usa/san_francisco/flywheel_coffee.jpg" }
                             ],
                             study: [
-                                { name: "Sextant Coffee", desc: "넓은 좌석과 작업 공간", img: "./images/usa/san_francisco/sextant_coffee.jpg" },
-                                { name: "Saluhall", desc: "모던한 복합 문화 카페", img: "./images/usa/san_francisco/saluhall.jpg" }
+                                { name: "Sextant Coffee", desc: "넓은 좌석과 작업 공간", img: "./images/america/usa/san_francisco/sextant_coffee.jpg" },
+                                { name: "Saluhall", desc: "모던한 복합 문화 카페", img: "./images/america/usa/san_francisco/saluhall.jpg" }
                             ]
                         },
                         activities: [
-                            { name: "케이블카 탑승", desc: "언덕을 오르내리는 낭만", img: "./images/usa/san_francisco/cable_car.jpg" },
-                            { name: "페리 빌딩 푸드 투어", desc: "현지 미식 탐방", img: "./images/usa/san_francisco/ferry_building_food_tour.jpg" },
-                            { name: "뮤어 우즈 숲 투어", desc: "거대 레드우드 숲 산책", img: "./images/usa/san_francisco/muir_woods.jpg" },
-                            { name: "페인티드 레이디스 방문", desc: "알록달록 빅토리아 양식 집", img: "./images/usa/san_francisco/painted_ladies.jpg" },
-                            { name: "미션 지구 벽화 투어", desc: "거리 예술의 중심지", img: "./images/usa/san_francisco/mission_district_murals.jpg" }
+                            { name: "케이블카 탑승", desc: "언덕을 오르내리는 낭만", img: "./images/america/usa/san_francisco/cable_car.jpg" },
+                            { name: "페리 빌딩 푸드 투어", desc: "현지 미식 탐방", img: "./images/america/usa/san_francisco/ferry_building_food_tour.jpg" },
+                            { name: "뮤어 우즈 숲 투어", desc: "거대 레드우드 숲 산책", img: "./images/america/usa/san_francisco/muir_woods.jpg" },
+                            { name: "페인티드 레이디스 방문", desc: "알록달록 빅토리아 양식 집", img: "./images/america/usa/san_francisco/painted_ladies.jpg" },
+                            { name: "미션 지구 벽화 투어", desc: "거리 예술의 중심지", img: "./images/america/usa/san_francisco/mission_district_murals.jpg" }
                         ],
                         hotels: [
                             { name: "Amsterdam Hostel", price: "약 11만원", desc: "유니언 스퀘어 인근 최고 가성비" },
@@ -616,51 +775,59 @@
                         ]
                     }
                 }
-            },
+            }
+
+            ,
             "일본": {
                 desc: "가깝고도 깊은 감성, 완벽한 휴식의 나라",
                 cities: {
                     "도쿄": {
                         attractions: [
-                            { name: "시부야 스카이", desc: "360도 도심 뷰", img: "./images/japan/tokyo/shibuya_sky.jpg" },
-                            { name: "센소지", desc: "전통 사찰", img: "./images/japan/tokyo/sensoji_temple.jpg" },
-                            { name: "도쿄 타워", desc: "야경 상징", img: "./images/japan/tokyo/tokyo_tower.jpg" },
-                            { name: "팀랩", desc: "미디어 아트", img: "./images/japan/tokyo/teamlab_planets.jpg" },
-                            { name: "신주쿠 교엔", desc: "도심 공원", img: "./images/japan/tokyo/shinjuku_gyoen.jpg" }
+                            { name: "시부야 스카이", desc: "360도 도심 뷰", img: "./images/asia_aus/japan/tokyo/shibuya_sky.jpg" },
+                            { name: "센소지", desc: "전통 사찰", img: "./images/asia_aus/japan/tokyo/sensoji_temple.jpg" },
+                            { name: "도쿄 타워", desc: "야경 상징", img: "./images/asia_aus/japan/tokyo/tokyo_tower.jpg" },
+                            { name: "팀랩", desc: "미디어 아트", img: "./images/asia_aus/japan/tokyo/teamlab_planets.jpg" },
+                            { name: "신주쿠 교엔", desc: "도심 공원", img: "./images/asia_aus/japan/tokyo/shinjuku_gyoen.jpg" }
                         ],
                         restaurants: [
-                            { name: "Ichiran Ramen", desc: "독서실 라멘의 원조", img: "./images/japan/tokyo/ichiran_ramen.jpg" },
-                            { name: "Sushi Zanmai", desc: "츠키지 시장 스시", img: "./images/japan/tokyo/sushi_zanmai.jpg" },
-                            { name: "Monjayaki Street", desc: "도쿄 명물 몬자야키 거리", img: "./images/japan/tokyo/monjayaki_street.jpg" }
-                        ],
-                        cafes: {
-                            vibe: [{ name: "반넬리", desc: "감성 카페", img: "./images/japan/tokyo/vanne_cafe.jpg" }],
-                            study: [{ name: "츠타야", desc: "공부 명당", img: "./images/japan/tokyo/tsutaya_books.jpg" }]
-                        },
-                        activities: ["디즈니 투어", "온천 체험", "쇼핑", "맛집", "일몰"],
-                        hotels: [{ name: "선루트", price: "20만원대" }]
-                    },
-                    "오사카": {
-                        attractions: [
-                            { name: "유니버설 스튜디오", desc: "마리오와 해리포터의 세계", img: "./images/japan/osaka/universal_studios_japan.jpg" },
-                            { name: "오사카성", desc: "역사와 공원이 어우러진 곳", img: "./images/japan/osaka/osaka_castle.jpg" },
-                            { name: "도톤보리", desc: "화려한 간판과 미식의 거리", img: "./images/japan/osaka/dotonbori.jpg" },
-                            { name: "가이유칸 수족관", desc: "세계 최대급 실내 수족관", img: "./images/japan/osaka/kaiyukan_aquarium.jpg" },
-                            { name: "츠텐카쿠", desc: "오사카의 옛 향수 타워", img: "./images/japan/osaka/tsutenkaku_tower.jpg" }
-                        ],
-                        restaurants: [
-                            { name: "Ichiran Dotonbori", desc: "오사카 필수 라멘 코스", img: "./images/japan/osaka/ichiran_dotonbori.jpg" },
-                            { name: "Takoyaki Wanaka", desc: "겉바속촉 타코야키", img: "./images/japan/osaka/takoyaki_wanaka.jpg" },
-                            { name: "Kushikatsu Daruma", desc: "오사카 명물 꼬치튀김", img: "./images/japan/osaka/kushikatsu_daruma.jpg" }
+                            { name: "Ichiran Ramen", desc: "독서실 라멘의 원조", img: "./images/asia_aus/japan/tokyo/ichiran_ramen.jpg" },
+                            { name: "Sushi Zanmai", desc: "츠키지 시장 스시", img: "./images/asia_aus/japan/tokyo/sushi_zanmai.jpg" },
+                            { name: "Monjayaki Street", desc: "도쿄 명물 몬자야키 거리", img: "./images/asia_aus/japan/tokyo/monjayaki_street.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "LiLo Coffee", desc: "아메리카무라 힙한 로스터리", img: "./images/japan/osaka/lilo_coffee.jpg" },
-                                { name: "Mother Moon", desc: "템포잔 분위기 맛집", img: "./images/japan/osaka/mother_moon_cafe.jpg" }
+                                { name: "반넬리", desc: "감성 카페", img: "./images/asia_aus/japan/tokyo/vanne_cafe.jpg" }
                             ],
                             study: [
-                                { name: "Doutor Namba", desc: "공부하기 가장 만만한 곳", img: "./images/japan/osaka/doutor_coffee.jpg" },
-                                { name: "Benkyo Cafe", desc: "카공족 전용 학습 카페", img: "./images/japan/osaka/benkyo_cafe.jpg" }
+                                { name: "츠타야", desc: "공부 명당", img: "./images/asia_aus/japan/tokyo/tsutaya_books.jpg" }
+                            ]
+                        },
+                        activities: ["디즈니 투어", "온천 체험", "쇼핑", "맛집", "일몰"],
+                        hotels: [
+                            { name: "선루트", price: "20만원대" }
+                        ]
+                    },
+                    "오사카": {
+                        attractions: [
+                            { name: "유니버설 스튜디오", desc: "마리오와 해리포터의 세계", img: "./images/asia_aus/japan/osaka/universal_studios_japan.jpg" },
+                            { name: "오사카성", desc: "역사와 공원이 어우러진 곳", img: "./images/asia_aus/japan/osaka/osaka_castle.jpg" },
+                            { name: "도톤보리", desc: "화려한 간판과 미식의 거리", img: "./images/asia_aus/japan/osaka/dotonbori.jpg" },
+                            { name: "가이유칸 수족관", desc: "세계 최대급 실내 수족관", img: "./images/asia_aus/japan/osaka/kaiyukan_aquarium.jpg" },
+                            { name: "츠텐카쿠", desc: "오사카의 옛 향수 타워", img: "./images/asia_aus/japan/osaka/tsutenkaku_tower.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Ichiran Dotonbori", desc: "오사카 필수 라멘 코스", img: "./images/asia_aus/japan/osaka/ichiran_dotonbori.jpg" },
+                            { name: "Takoyaki Wanaka", desc: "겉바속촉 타코야키", img: "./images/asia_aus/japan/osaka/takoyaki_wanaka.jpg" },
+                            { name: "Kushikatsu Daruma", desc: "오사카 명물 꼬치튀김", img: "./images/asia_aus/japan/osaka/kushikatsu_daruma.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [
+                                { name: "LiLo Coffee", desc: "아메리카무라 힙한 로스터리", img: "./images/asia_aus/japan/osaka/lilo_coffee.jpg" },
+                                { name: "Mother Moon", desc: "템포잔 분위기 맛집", img: "./images/asia_aus/japan/osaka/mother_moon_cafe.jpg" }
+                            ],
+                            study: [
+                                { name: "Doutor Namba", desc: "공부하기 가장 만만한 곳", img: "./images/asia_aus/japan/osaka/doutor_coffee.jpg" },
+                                { name: "Benkyo Cafe", desc: "카공족 전용 학습 카페", img: "./images/asia_aus/japan/osaka/benkyo_cafe.jpg" }
                             ]
                         },
                         activities: ["도톤보리 크루즈", "쿠로몬 시장 투어", "TeamLab Botanical", "스파 월드 체험", "햅파이브 관람차"],
@@ -674,25 +841,25 @@
                     },
                     "후쿠오카": {
                         attractions: [
-                            { name: "오호리 공원", desc: "도심 속 거대 호수 쉼터", img: "./images/japan/fukuoka/ohori_park.jpg" },
-                            { name: "후쿠오카 타워", desc: "해변 옆 환상적 야경", img: "./images/japan/fukuoka/fukuoka_tower.jpg" },
-                            { name: "다자이후 텐만구", desc: "합격을 기원하는 사원", img: "./images/japan/fukuoka/dazaifu_tenmangu.jpg" },
-                            { name: "캐널시티", desc: "복합 엔터테인먼트 쇼핑몰", img: "./images/japan/fukuoka/canal_city.jpg" },
-                            { name: "쿠시다 신사", desc: "후쿠오카의 역사적 수호신", img: "./images/japan/fukuoka/kushida_shrine.jpg" }
+                            { name: "오호리 공원", desc: "도심 속 거대 호수 쉼터", img: "./images/asia_aus/japan/fukuoka/ohori_park.jpg" },
+                            { name: "후쿠오카 타워", desc: "해변 옆 환상적 야경", img: "./images/asia_aus/japan/fukuoka/fukuoka_tower.jpg" },
+                            { name: "다자이후 텐만구", desc: "합격을 기원하는 사원", img: "./images/asia_aus/japan/fukuoka/dazaifu_tenmangu.jpg" },
+                            { name: "캐널시티", desc: "복합 엔터테인먼트 쇼핑몰", img: "./images/asia_aus/japan/fukuoka/canal_city.jpg" },
+                            { name: "쿠시다 신사", desc: "후쿠오카의 역사적 수호신", img: "./images/asia_aus/japan/fukuoka/kushida_shrine.jpg" }
                         ],
                         restaurants: [
-                            { name: "Ichiran Main Branch", desc: "돈코츠 라멘의 본고장", img: "./images/japan/fukuoka/ichiran_main.jpg" },
-                            { name: "Motsunabe Oyama", desc: "후쿠오카 명물 대창 전골", img: "./images/japan/fukuoka/motsunabe_oyama.jpg" },
-                            { name: "Yatai Stalls", desc: "나카스 강변 포장마차", img: "./images/japan/fukuoka/nakasu_yatai.jpg" }
+                            { name: "Ichiran Main Branch", desc: "돈코츠 라멘의 본고장", img: "./images/asia_aus/japan/fukuoka/ichiran_main.jpg" },
+                            { name: "Motsunabe Oyama", desc: "후쿠오카 명물 대창 전골", img: "./images/asia_aus/japan/fukuoka/motsunabe_oyama.jpg" },
+                            { name: "Yatai Stalls", desc: "나카스 강변 포장마차", img: "./images/asia_aus/japan/fukuoka/nakasu_yatai.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "FUK Coffee", desc: "공항 테마의 트렌디 카페", img: "./images/japan/fukuoka/fuk_coffee.jpg" },
-                                { name: "Manu Coffee", desc: "후쿠오카 로컬 감성 브랜드", img: "./images/japan/fukuoka/manu_coffee.jpg" }
+                                { name: "FUK Coffee", desc: "공항 테마의 트렌디 카페", img: "./images/asia_aus/japan/fukuoka/fuk_coffee.jpg" },
+                                { name: "Manu Coffee", desc: "후쿠오카 로컬 감성 브랜드", img: "./images/asia_aus/japan/fukuoka/manu_coffee.jpg" }
                             ],
                             study: [
-                                { name: "Coffee County", desc: "조용하고 깊이 있는 작업실", img: "./images/japan/fukuoka/coffee_county.jpg" },
-                                { name: "Bookstore Cafe", desc: "책과 함께하는 집중 공간", img: "./images/japan/fukuoka/bookstore_cafe.jpg" }
+                                { name: "Coffee County", desc: "조용하고 깊이 있는 작업실", img: "./images/asia_aus/japan/fukuoka/coffee_county.jpg" },
+                                { name: "Bookstore Cafe", desc: "책과 함께하는 집중 공간", img: "./images/asia_aus/japan/fukuoka/bookstore_cafe.jpg" }
                             ]
                         },
                         activities: ["나카스 야타이 포차", "모모치 해변 산책", "마린 월드 수족관", "텐진 지하상가 쇼핑", "다자이후 매화 투어"],
@@ -706,25 +873,25 @@
                     },
                     "오키나와": {
                         attractions: [
-                            { name: "츄라우미 수족관", desc: "고래상어와 만나는 거대 수조", img: "./images/japan/okinawa/churaumi_aquarium.jpg" },
-                            { name: "슈리 성", desc: "류큐 왕국의 역사적 유산", img: "./images/japan/okinawa/shuri_castle.jpg" },
-                            { name: "국제거리", desc: "나하 시내의 활기찬 거리", img: "./images/japan/okinawa/kokusai_dori.jpg" },
-                            { name: "아메리칸 빌리지", desc: "이국적인 풍경과 석양 명소", img: "./images/japan/okinawa/american_village.jpg" },
-                            { name: "만좌모", desc: "코끼리 바위 절벽의 절경", img: "./images/japan/okinawa/manzam.jpg" }
+                            { name: "츄라우미 수족관", desc: "고래상어와 만나는 거대 수조", img: "./images/asia_aus/japan/okinawa/churaumi_aquarium.jpg" },
+                            { name: "슈리 성", desc: "류큐 왕국의 역사적 유산", img: "./images/asia_aus/japan/okinawa/shuri_castle.jpg" },
+                            { name: "국제거리", desc: "나하 시내의 활기찬 거리", img: "./images/asia_aus/japan/okinawa/kokusai_dori.jpg" },
+                            { name: "아메리칸 빌리지", desc: "이국적인 풍경과 석양 명소", img: "./images/asia_aus/japan/okinawa/american_village.jpg" },
+                            { name: "만좌모", desc: "코끼리 바위 절벽의 절경", img: "./images/asia_aus/japan/okinawa/manzam.jpg" }
                         ],
                         restaurants: [
-                            { name: "Steak House 88", desc: "미국식 정통 스테이크", img: "./images/japan/okinawa/steak_house_88.jpg" },
-                            { name: "Kijimuna", desc: "타코 라이스 맛집", img: "./images/japan/okinawa/kijimuna.jpg" },
-                            { name: "A&W Burger", desc: "오키나와 한정 패스트푸드", img: "./images/japan/okinawa/aw_burger.jpg" }
+                            { name: "Steak House 88", desc: "미국식 정통 스테이크", img: "./images/asia_aus/japan/okinawa/steak_house_88.jpg" },
+                            { name: "Kijimuna", desc: "타코 라이스 맛집", img: "./images/asia_aus/japan/okinawa/kijimuna.jpg" },
+                            { name: "A&W Burger", desc: "오키나와 한정 패스트푸드", img: "./images/asia_aus/japan/okinawa/aw_burger.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Zhyvago Coffee", desc: "아메리칸 빌리지 뷰 맛집", img: "./images/japan/okinawa/zhyvago_coffee.jpg" },
-                                { name: "Hanon", desc: "바다 보며 팬케이크 힐링", img: "./images/japan/okinawa/hanon.jpg" }
+                                { name: "Zhyvago Coffee", desc: "아메리칸 빌리지 뷰 맛집", img: "./images/asia_aus/japan/okinawa/zhyvago_coffee.jpg" },
+                                { name: "Hanon", desc: "바다 보며 팬케이크 힐링", img: "./images/asia_aus/japan/okinawa/hanon.jpg" }
                             ],
                             study: [
-                                { name: "Study Cafe Naha", desc: "나하 시내 전문 학습 공간", img: "./images/japan/okinawa/study_cafe_naha.jpg" },
-                                { name: "oHacorte Bakery", desc: "쾌적하고 조용한 베이커리", img: "./images/japan/okinawa/ohacorte_bakery.jpg" }
+                                { name: "Study Cafe Naha", desc: "나하 시내 전문 학습 공간", img: "./images/asia_aus/japan/okinawa/study_cafe_naha.jpg" },
+                                { name: "oHacorte Bakery", desc: "쾌적하고 조용한 베이커리", img: "./images/asia_aus/japan/okinawa/ohacorte_bakery.jpg" }
                             ]
                         },
                         activities: ["푸른동굴 스노클링", "슈리성 성곽길 걷기", "파인애플 파크 투어", "고래 관찰 (3월 한정)", "고래상어와 수영 체험"],
@@ -737,48 +904,56 @@
                         ]
                     }
                 }
-            },
+            }
+
+            ,
             "필리핀": {
                 desc: "에메랄드빛 바다, 활기찬 수중 낙원",
                 cities: {
                     "마닐라": {
                         attractions: [
-                            { name: "인트라무로스", desc: "스페인 구시가지", img: "./images/philippines/manila/intramuros.jpg" },
-                            { name: "리잘 공원", desc: "역사적 중심지", img: "./images/philippines/manila/rizal_park.jpg" }
+                            { name: "인트라무로스", desc: "스페인 구시가지", img: "./images/asia_aus/philippines/manila/intramuros.jpg" },
+                            { name: "리잘 공원", desc: "역사적 중심지", img: "./images/asia_aus/philippines/manila/rizal_park.jpg" }
                         ],
                         restaurants: [
-                            { name: "Jollibee", desc: "필리핀 국민 패스트푸드", img: "./images/philippines/manila/jollibee.jpg" },
-                            { name: "Aristocrat", desc: "마닐라 전통 바비큐", img: "./images/philippines/manila/aristocrat.jpg" }
-                        ],
-                        cafes: {
-                            vibe: [{ name: "The Henry", desc: "빈티지", img: "./images/philippines/manila/the_henry_hotel_cafe.jpg" }],
-                            study: [{ name: "Commune", desc: "카공", img: "./images/philippines/manila/commune_cafe.jpg" }]
-                        },
-                        activities: ["선셋 크루즈", "화산 투어"],
-                        hotels: [{ name: "Hop Inn", price: "4만원" }]
-                    },
-                    "세부": {
-                        attractions: [
-                            { name: "오슬롭 고래상어", desc: "거대 고래상어와의 조우", img: "./images/philippines/cebu/oslob_whale_shark.jpg" },
-                            { name: "가와산 폭포", desc: "에메랄드빛 계곡 다이빙", img: "./images/philippines/cebu/kawasan_falls.jpg" },
-                            { name: "마젤란 십자가", desc: "세부 역사의 시작점", img: "./images/philippines/cebu/magellans_cross.jpg" },
-                            { name: "도교 사원", desc: "이국적인 산 위의 사원", img: "./images/philippines/cebu/taoist_temple.jpg" },
-                            { name: "탑스 전망대", desc: "세부 시내 야경 한눈에", img: "./images/philippines/cebu/tops_lookout.jpg" }
-                        ],
-                        restaurants: [
-                            { name: "Jollibee", desc: "치킨조이 필수", img: "./images/philippines/cebu/jollibee_cebu.jpg" },
-                            { name: "Rico's Lechon", desc: "세부 최고의 레촌 맛집", img: "./images/philippines/cebu/ricos_lechon.jpg" },
-                            { name: "Zubuchon", desc: "깔끔한 레촌 전문점", img: "./images/philippines/cebu/zubuchon.jpg" },
-                            { name: "Gerrelys Grill", desc: "그릴 오징어와 갈릭 라이스", img: "./images/philippines/cebu/gerrys_grill.jpg" }
+                            { name: "Jollibee", desc: "필리핀 국민 패스트푸드", img: "./images/asia_aus/philippines/manila/jollibee.jpg" },
+                            { name: "Aristocrat", desc: "마닐라 전통 바비큐", img: "./images/asia_aus/philippines/manila/aristocrat.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "La Vie", desc: "파리 느낌 예쁜 정원 카페", img: "./images/philippines/cebu/la_vie_parisenne.jpg" },
-                                { name: "10,000 Roses", desc: "장미 조명이 가득한 석양 뷰", img: "./images/philippines/cebu/10000_roses_cafe.jpg" }
+                                { name: "The Henry", desc: "빈티지", img: "./images/asia_aus/philippines/manila/the_henry_hotel_cafe.jpg" }
                             ],
                             study: [
-                                { name: "Workplace Cafe", desc: "세부의 본격 카공 전용 공간", img: "./images/philippines/cebu/workplace_cafe.jpg" },
-                                { name: "Bo's Coffee IT", desc: "로컬 카공족의 스테디셀러", img: "./images/philippines/cebu/bos_coffee.jpg" }
+                                { name: "Commune", desc: "카공", img: "./images/asia_aus/philippines/manila/commune_cafe.jpg" }
+                            ]
+                        },
+                        activities: ["선셋 크루즈", "화산 투어"],
+                        hotels: [
+                            { name: "Hop Inn", price: "4만원" }
+                        ]
+                    },
+                    "세부": {
+                        attractions: [
+                            { name: "오슬롭 고래상어", desc: "거대 고래상어와의 조우", img: "./images/asia_aus/philippines/cebu/oslob_whale_shark.jpg" },
+                            { name: "가와산 폭포", desc: "에메랄드빛 계곡 다이빙", img: "./images/asia_aus/philippines/cebu/kawasan_falls.jpg" },
+                            { name: "마젤란 십자가", desc: "세부 역사의 시작점", img: "./images/asia_aus/philippines/cebu/magellans_cross.jpg" },
+                            { name: "도교 사원", desc: "이국적인 산 위의 사원", img: "./images/asia_aus/philippines/cebu/taoist_temple.jpg" },
+                            { name: "탑스 전망대", desc: "세부 시내 야경 한눈에", img: "./images/asia_aus/philippines/cebu/tops_lookout.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Jollibee", desc: "치킨조이 필수", img: "./images/asia_aus/philippines/cebu/jollibee_cebu.jpg" },
+                            { name: "Rico's Lechon", desc: "세부 최고의 레촌 맛집", img: "./images/asia_aus/philippines/cebu/ricos_lechon.jpg" },
+                            { name: "Zubuchon", desc: "깔끔한 레촌 전문점", img: "./images/asia_aus/philippines/cebu/zubuchon.jpg" },
+                            { name: "Gerrelys Grill", desc: "그릴 오징어와 갈릭 라이스", img: "./images/asia_aus/philippines/cebu/gerrys_grill.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [
+                                { name: "La Vie", desc: "파리 느낌 예쁜 정원 카페", img: "./images/asia_aus/philippines/cebu/la_vie_parisenne.jpg" },
+                                { name: "10,000 Roses", desc: "장미 조명이 가득한 석양 뷰", img: "./images/asia_aus/philippines/cebu/10000_roses_cafe.jpg" }
+                            ],
+                            study: [
+                                { name: "Workplace Cafe", desc: "세부의 본격 카공 전용 공간", img: "./images/asia_aus/philippines/cebu/workplace_cafe.jpg" },
+                                { name: "Bo's Coffee IT", desc: "로컬 카공족의 스테디셀러", img: "./images/asia_aus/philippines/cebu/bos_coffee.jpg" }
                             ]
                         },
                         activities: ["캐녀닝 투어", "모알보알 거북이 스노클링", "아일랜드 호핑투어", "세부 시티 유적 투어", "SM 씨사이드 쇼핑"],
@@ -791,95 +966,131 @@
                         ]
                     }
                 }
-            },
+            }
+
+            ,
             "중국": {
                 desc: "찬란한 문명과 초현대적 풍경의 공존",
                 cities: {
                     "상하이": {
                         attractions: [
-                            { name: "와이탄 야경", desc: "동방명주를 마주하는 야경", img: "./images/china/shanghai/the_bund.jpg" },
-                            { name: "예원 정원", desc: "중국 전통 조경의 정수", img: "./images/china/shanghai/yu_garden.jpg" },
-                            { name: "디즈니랜드", desc: "상하이만의 특별한 테마파크", img: "./images/china/shanghai/shanghai_disneyland.jpg" },
-                            { name: "신천지", desc: "유럽풍 카페 거리 산책", img: "./images/china/shanghai/xintiandi.jpg" },
-                            { name: "상하이 타워", desc: "세계적인 높이의 전망대", img: "./images/china/shanghai/shanghai_tower.jpg" }
+                            { name: "와이탄 야경", desc: "동방명주를 마주하는 야경", img: "./images/asia_aus/china/shanghai/the_bund.jpg" },
+                            { name: "예원 정원", desc: "중국 전통 조경의 정수", img: "./images/asia_aus/china/shanghai/yu_garden.jpg" },
+                            { name: "디즈니랜드", desc: "상하이만의 특별한 테마파크", img: "./images/asia_aus/china/shanghai/shanghai_disneyland.jpg" },
+                            { name: "신천지", desc: "유럽풍 카페 거리 산책", img: "./images/asia_aus/china/shanghai/xintiandi.jpg" },
+                            { name: "상하이 타워", desc: "세계적인 높이의 전망대", img: "./images/asia_aus/china/shanghai/shanghai_tower.jpg" }
                         ],
                         restaurants: [
-                            { name: "Haidilao Hot Pot", desc: "최고의 서비스 훠궈", img: "./images/china/shanghai/haidilao_hot_pot.jpg" },
-                            { name: "Yang's Dumpling", desc: "육즙 가득 소쟁포", img: "./images/china/shanghai/yangs_dumpling.jpg" },
-                            { name: "Grandmother's", desc: "와이탄 가정식 맛집", img: "./images/china/shanghai/grandmother_restaurant.jpg" }
+                            { name: "Haidilao Hot Pot", desc: "최고의 서비스 훠궈", img: "./images/asia_aus/china/shanghai/haidilao_hot_pot.jpg" },
+                            { name: "Yang's Dumpling", desc: "육즙 가득 소쟁포", img: "./images/asia_aus/china/shanghai/yangs_dumpling.jpg" },
+                            { name: "Grandmother's", desc: "와이탄 가정식 맛집", img: "./images/asia_aus/china/shanghai/grandmother_restaurant.jpg" }
                         ],
                         cafes: {
-                            vibe: [{ name: "Starbucks Roastery", desc: "세계 최고 규모 매장", img: "./images/china/shanghai/starbucks_roastery.jpg" }],
-                            study: [{ name: "Seesaw Coffee", desc: "조용하고 모던한 카공 명소", img: "./images/china/shanghai/seesaw_coffee.jpg" }]
+                            vibe: [
+                                { name: "Starbucks Roastery", desc: "세계 최고 규모 매장", img: "./images/asia_aus/china/shanghai/starbucks_roastery.jpg" }
+                            ],
+                            study: [
+                                { name: "Seesaw Coffee", desc: "조용하고 모던한 카공 명소", img: "./images/asia_aus/china/shanghai/seesaw_coffee.jpg" }
+                            ]
                         },
                         activities: ["황푸강 유람선", "길거리 음식 투어", "디즈니 야간쇼", "타워 전망대 투어", "자기부상열차 체험"],
-                        hotels: [{ name: "이텔 그랜드", price: "9만원대", desc: "인민광장 앞 위치 최고" }]
+                        hotels: [
+                            { name: "이텔 그랜드", price: "9만원대", desc: "인민광장 앞 위치 최고" }
+                        ]
                     },
                     "홍콩/마카오/선전": {
-                        attractions: [{ name: "세계지창", desc: "세계 명소 축소판", img: "./images/china/shenzhen/window_of_the_world.jpg" }],
+                        attractions: [
+                            { name: "세계지창", desc: "세계 명소 축소판", img: "./images/asia_aus/china/shenzhen/window_of_the_world.jpg" }
+                        ],
                         restaurants: [
-                            { name: "Dim Sum House", desc: "홍콩식 딤섬", img: "./images/china/hong_kong/dim_sum.jpg" },
-                            { name: "Heytea", desc: "크림치즈 티의 원조", img: "./images/china/shenzhen/heytea.jpg" }
+                            { name: "Dim Sum House", desc: "홍콩식 딤섬", img: "./images/asia_aus/china/hong_kong/dim_sum.jpg" },
+                            { name: "Heytea", desc: "크림치즈 티의 원조", img: "./images/asia_aus/china/shenzhen/heytea.jpg" }
                         ],
                         cafes: {
-                            vibe: [{ name: "Gee Coffee", desc: "세련됨", img: "./images/china/shenzhen/gee_coffee.jpg" }],
-                            study: [{ name: "Library Cafe", desc: "작업실", img: "./images/china/shenzhen/library_cafe.jpg" }]
+                            vibe: [
+                                { name: "Gee Coffee", desc: "세련됨", img: "./images/asia_aus/china/shenzhen/gee_coffee.jpg" }
+                            ],
+                            study: [
+                                { name: "Library Cafe", desc: "작업실", img: "./images/asia_aus/china/shenzhen/library_cafe.jpg" }
+                            ]
                         },
                         activities: ["드론쇼 관람", "예술거리"],
-                        hotels: [{ name: "Muji Hotel", price: "13만원" }]
+                        hotels: [
+                            { name: "Muji Hotel", price: "13만원" }
+                        ]
                     },
                     "베이징": {
-                        attractions: [{ name: "만리장성", desc: "인류 최고의 유산", img: "./images/china/beijing/great_wall.jpg" }],
+                        attractions: [
+                            { name: "만리장성", desc: "인류 최고의 유산", img: "./images/asia_aus/china/beijing/great_wall.jpg" }
+                        ],
                         restaurants: [
-                            { name: "Peking Duck House", desc: "정통 베이징덕", img: "./images/china/beijing/peking_duck.jpg" },
-                            { name: "Haidilao", desc: "훠궈의 정석", img: "./images/china/beijing/haidilao_beijing.jpg" }
+                            { name: "Peking Duck House", desc: "정통 베이징덕", img: "./images/asia_aus/china/beijing/peking_duck.jpg" },
+                            { name: "Haidilao", desc: "훠궈의 정석", img: "./images/asia_aus/china/beijing/haidilao_beijing.jpg" }
                         ],
                         cafes: {
-                            vibe: [{ name: "Metal Hands", desc: "후퉁감성", img: "./images/china/beijing/metal_hands_cafe.jpg" }],
-                            study: [{ name: "Soloist", desc: "집중명당", img: "./images/china/beijing/soloist_coffee.jpg" }]
+                            vibe: [
+                                { name: "Metal Hands", desc: "후퉁감성", img: "./images/asia_aus/china/beijing/metal_hands_cafe.jpg" }
+                            ],
+                            study: [
+                                { name: "Soloist", desc: "집중명당", img: "./images/asia_aus/china/beijing/soloist_coffee.jpg" }
+                            ]
                         },
                         activities: ["고궁 관람", "카오야 시식"],
-                        hotels: [{ name: "Novotel", price: "10만원" }]
+                        hotels: [
+                            { name: "Novotel", price: "10만원" }
+                        ]
                     }
                 }
-            },
+            }
+
+            ,
             "라오스": {
                 desc: "시간이 멈춘 듯한 배낭여행의 성지",
                 cities: {
                     "비엔티엔": {
-                        attractions: [{ name: "빠뚜사이", desc: "개선문", img: "./images/laos/vientiane/patuxai_arch.jpg" }],
-                        restaurants: [
-                            { name: "Kualao Restaurant", desc: "라오스 전통 요리", img: "./images/laos/vientiane/kualao_restaurant.jpg" },
-                            { name: "PVO Vietnamese Food", desc: "가성비 쌀국수", img: "./images/laos/vientiane/pvo_vietnamese.jpg" }
-                        ],
-                        cafes: {
-                            vibe: [{ name: "Saffron", desc: "강변뷰", img: "./images/laos/vientiane/saffron_coffee.jpg" }],
-                            study: [{ name: "Joma", desc: "공부방", img: "./images/laos/vientiane/joma_bakery.jpg" }]
-                        },
-                        activities: ["선셋 산책", "사원 순례"],
-                        hotels: [{ name: "Ibis", price: "7만원" }]
-                    },
-                    "방비엥": {
                         attractions: [
-                            { name: "블루라군 1", desc: "신비로운 물빛 다이빙", img: "./images/laos/vang_vieng/blue_lagoon_1.jpg" },
-                            { name: "탐짱 동굴", desc: "역사적 동굴 투어", img: "./images/laos/vang_vieng/tham_chang_cave.jpg" },
-                            { name: "남송강", desc: "유유자적 튜빙 산책", img: "./images/laos/vang_vieng/nam_song_river.jpg" },
-                            { name: "파당 전망대", desc: "구름 위 산맥 뷰", img: "./images/laos/vang_vieng/pha_ngern_viewpoint.jpg" },
-                            { name: "블루라군 3", desc: "조용한 시크릿 라군", img: "./images/laos/vang_vieng/blue_lagoon_3.jpg" }
+                            { name: "빠뚜사이", desc: "개선문", img: "./images/asia_aus/laos/vientiane/patuxai_arch.jpg" },
+                            { name: "탓 루앙 사원", desc: "라오스의 상징 황금사원", img: "./images/asia_aus/laos/vientiane/that_luang.jpg" },
+                            { name: "호 프라 케우", desc: "에메랄드 불상 사원", img: "./images/asia_aus/laos/vientiane/haw_phra_kaew.jpg" }
                         ],
                         restaurants: [
-                            { name: "Sandwich Stalls", desc: "길거리 바게트 샌드위치", img: "./images/laos/vang_vieng/laos_sandwich.jpg" },
-                            { name: "Peepok's", desc: "삼겹살 샤브샤브", img: "./images/laos/vang_vieng/peepoks_bbq.jpg" },
-                            { name: "Luang Prabang Bakery", desc: "거대 쿠키와 빵", img: "./images/laos/vang_vieng/luang_prabang_bakery.jpg" }
+                            { name: "Kualao Restaurant", desc: "라오스 전통 요리", img: "./images/asia_aus/laos/vientiane/kualao_restaurant.jpg" },
+                            { name: "PVO Vietnamese Food", desc: "가성비 쌀국수", img: "./images/asia_aus/laos/vientiane/pvo_vietnamese.jpg" }
                         ],
                         cafes: {
                             vibe: [
-                                { name: "Pulluu", desc: "논밭 힐링 뷰", img: "./images/laos/vang_vieng/pulluu_cafe.jpg" },
-                                { name: "Utopia", desc: "강변 해먹 휴식", img: "./images/laos/vang_vieng/utopia_bar.jpg" }
+                                { name: "Saffron", desc: "강변뷰", img: "./images/asia_aus/laos/vientiane/saffron_coffee.jpg" }
                             ],
                             study: [
-                                { name: "Naked Espresso", desc: "커피 맛집 카공 명당", img: "./images/laos/vang_vieng/naked_espresso.jpg" },
-                                { name: "Common Grounds", desc: "노트북 작업 성지", img: "./images/laos/vang_vieng/common_grounds.jpg" }
+                                { name: "Joma", desc: "공부방", img: "./images/asia_aus/laos/vientiane/joma_bakery.jpg" }
+                            ]
+                        },
+                        activities: ["선셋 산책", "사원 순례"],
+                        hotels: [
+                            { name: "Ibis", price: "7만원" }
+                        ]
+                    },
+                    "방비엥": {
+                        attractions: [
+                            { name: "블루라군 1", desc: "신비로운 물빛 다이빙", img: "./images/asia_aus/laos/vang_vieng/blue_lagoon_1.jpg" },
+                            { name: "탐짱 동굴", desc: "역사적 동굴 투어", img: "./images/asia_aus/laos/vang_vieng/tham_chang_cave.jpg" },
+                            { name: "남송강", desc: "유유자적 튜빙 산책", img: "./images/asia_aus/laos/vang_vieng/nam_song_river.jpg" },
+                            { name: "파당 전망대", desc: "구름 위 산맥 뷰", img: "./images/asia_aus/laos/vang_vieng/pha_ngern_viewpoint.jpg" },
+                            { name: "블루라군 3", desc: "조용한 시크릿 라군", img: "./images/asia_aus/laos/vang_vieng/blue_lagoon_3.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Sandwich Stalls", desc: "길거리 바게트 샌드위치", img: "./images/asia_aus/laos/vang_vieng/laos_sandwich.jpg" },
+                            { name: "Peepok's", desc: "삼겹살 샤브샤브", img: "./images/asia_aus/laos/vang_vieng/peepoks_bbq.jpg" },
+                            { name: "Luang Prabang Bakery", desc: "거대 쿠키와 빵", img: "./images/asia_aus/laos/vang_vieng/luang_prabang_bakery.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [
+                                { name: "Pulluu", desc: "논밭 힐링 뷰", img: "./images/asia_aus/laos/vang_vieng/pulluu_cafe.jpg" },
+                                { name: "Utopia", desc: "강변 해먹 휴식", img: "./images/asia_aus/laos/vang_vieng/utopia_bar.jpg" }
+                            ],
+                            study: [
+                                { name: "Naked Espresso", desc: "커피 맛집 카공 명당", img: "./images/asia_aus/laos/vang_vieng/naked_espresso.jpg" },
+                                { name: "Common Grounds", desc: "노트북 작업 성지", img: "./images/asia_aus/laos/vang_vieng/common_grounds.jpg" }
                             ]
                         },
                         activities: ["버기카 질주", "남송강 튜빙", "열기구 일출 관람", "카약 투어", "야시장 먹방"],
@@ -892,22 +1103,344 @@
                         ]
                     },
                     "루앙프라방": {
-                        attractions: [{ name: "꽝시 폭포", desc: "에메랄드", img: "./images/laos/luang_prabang/kuang_si_falls.jpg" }],
+                        attractions: [],
+                        restaurants: [],
+                        cafes: { vibe: [], study: [] },
+                        activities: [],
+                        hotels: []
+                    }
+                }
+            }
+
+            ,
+            "영국": {
+                desc: "전통과 현대가 공존하는 신사의 나라",
+                cities: {
+                    "런던": {
+                        attractions: [
+                            { name: "빅벤", desc: "영국의 상징적인 시계탑", img: "./images/europe/uk/london/big_ben.jpg" },
+                            { name: "타워 브리지", desc: "템즈강의 랜드마크", img: "./images/europe/uk/london/tower_bridge.jpg" },
+                            { name: "버킹엄 궁전", desc: "영국 왕실의 거처", img: "./images/europe/uk/london/buckingham_palace.jpg" }
+                        ],
                         restaurants: [
-                            { name: "Night Market Food", desc: "만낍 뷔페와 꼬치구이", img: "./images/laos/luang_prabang/night_market_food.jpg" },
-                            { name: "Coconut Garden", desc: "분위기 좋은 라오스식", img: "./images/laos/luang_prabang/coconut_garden.jpg" },
-                            { name: "Khaiphaen", desc: "현지 식재료 퓨전 요리", img: "./images/laos/luang_prabang/khaiphaen.jpg" }
+                            { name: "The Ledbury", desc: "미슐랭 2스타 모던 영국식", img: "./images/europe/uk/london/ledbury.jpg" },
+                            { name: "Fish & Chips", desc: "전통 피시 앤 칩스", img: "./images/europe/uk/london/fish_and_chips.jpg" }
                         ],
                         cafes: {
-                            vibe: [{ name: "Pulluu", desc: "힐링뷰", img: "./images/laos/luang_prabang/pulluu.jpg" }],
-                            study: [{ name: "Indigo", desc: "카공", img: "./images/laos/luang_prabang/indigo_cafe.jpg" }]
+                            vibe: [{ name: "Monmouth Coffee", desc: "런던 최고의 커피", img: "./images/europe/uk/london/monmouth.jpg" }],
+                            study: [{ name: "British Library", desc: "학구적 분위기", img: "./images/europe/uk/london/british_library.jpg" }]
                         },
-                        activities: ["탁발 참여", "폭포 수영"],
-                        hotels: [{ name: "Silver Lotus", price: "6만원" }]
+                        activities: ["뮤지컬 관람", "애프터눈 티 체험"],
+                        hotels: [
+                            { name: "The Savoy", price: "50만원대", desc: "전설적인 럭셔리 호텔" },
+                            { name: "Generator London", price: "5만원대", desc: "힙한 호스텔" }
+                        ]
                     }
                 }
             },
+            "프랑스": {
+                desc: "낭만과 예술, 미식의 나라",
+                cities: {
+                    "파리": {
+                        attractions: [
+                            { name: "에펠탑", desc: "파리의 영원한 상징", img: "./images/europe/france/paris/eiffel_tower.jpg" },
+                            { name: "루브르 박물관", desc: "모나리자의 미소", img: "./images/europe/france/paris/louvre.jpg" },
+                            { name: "몽마르뜨 언덕", desc: "예술가들의 거리", img: "./images/europe/france/paris/montmartre.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Le Bouillon Chartier", desc: "가성비 최고의 프렌치", img: "./images/europe/france/paris/bouillon.jpg" },
+                            { name: "Angelina", desc: "전설의 핫초코와 몽블랑", img: "./images/europe/france/paris/angelina.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Café de Flore", desc: "파리의 역사적 카페", img: "./images/europe/france/paris/cafe_de_flore.jpg" }],
+                            study: [{ name: "BnF", desc: "프랑스 국립 도서관", img: "./images/europe/france/paris/bnf.jpg" }]
+                        },
+                        activities: ["센강 유람선", "베르사유 궁전 투어"],
+                        hotels: [
+                            { name: "Pullman Tour Eiffel", price: "30만원대", desc: "에펠탑 뷰 맛집" },
+                            { name: "St Christopher's Inn", price: "4만원대", desc: "배낭여행객 추천" }
+                        ]
+                    },
+                    "니스": {
+                        attractions: [
+                            { name: "프롬나드 데 장글레", desc: "영국인의 산책로", img: "./images/europe/france/nice/promenade.jpg" },
+                            { name: "캐슬 힐", desc: "니스 해변 파노라마", img: "./images/europe/france/nice/castle_hill.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "La Rossettisserie", desc: "아늑한 고기 요리", img: "./images/europe/france/nice/rossettisserie.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Plage Beau Rivage", desc: "해변가 야외 카페", img: "./images/europe/france/nice/beau_rivage.jpg" }],
+                            study: [{ name: "Workhouse Cafe", desc: "코워킹 카페", img: "./images/europe/france/nice/workhouse.jpg" }]
+                        },
+                        activities: ["해수욕", "근교 에즈 빌리지 투어"],
+                        hotels: [
+                            { name: "Hotel Negresco", price: "40만원대", desc: "니스 최고의 럭셔리" }
+                        ]
+                    }
+                }
+            },
+            "이탈리아": {
+                desc: "고대 문명과 르네상스의 발상지",
+                cities: {
+                    "로마": {
+                        attractions: [
+                            { name: "콜로세움", desc: "고대 로마의 검투장", img: "./images/europe/italy/rome/colosseum.jpg" },
+                            { name: "트레비 분수", desc: "동전을 던지며 소원", img: "./images/europe/italy/rome/trevi_fountain.jpg" },
+                            { name: "바티칸", desc: "세계에서 가장 작은 나라", img: "./images/europe/italy/rome/vatican.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Da Enzo", desc: "정통 까르보나라 맛집", img: "./images/europe/italy/rome/da_enzo.jpg" },
+                            { name: "Giolitti", desc: "로마 3대 젤라또", img: "./images/europe/italy/rome/giolitti.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Antico Caffè Greco", desc: "괴테가 사랑한 카페", img: "./images/europe/italy/rome/greco.jpg" }],
+                            study: [{ name: "Barnum Cafe", desc: "힙스터 작업 공간", img: "./images/europe/italy/rome/barnum.jpg" }]
+                        },
+                        activities: ["진실의 입 인증샷", "스페인 광장 계단"],
+                        hotels: [
+                            { name: "Navona Palace", price: "20만원대", desc: "나보나 광장 인근" }
+                        ]
+                    },
+                    "피렌체": {
+                        attractions: [
+                            { name: "두오모 성당", desc: "냉정과 열정 사이", img: "./images/europe/italy/florence/duomo.jpg" },
+                            { name: "우피치 미술관", desc: "르네상스 미술의 보고", img: "./images/europe/italy/florence/uffizi.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Trattoria Zà Zà", desc: "티본 스테이크 명가", img: "./images/europe/italy/florence/zaza.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Caffè Gilli", desc: "회전목마 앞 광장 카페", img: "./images/europe/italy/florence/gilli.jpg" }],
+                            study: [{ name: "La Cité", desc: "보헤미안 서점 카페", img: "./images/europe/italy/florence/la_cite.jpg" }]
+                        },
+                        activities: ["베키오 다리 산책", "미켈란젤로 언덕 야경"],
+                        hotels: [
+                            { name: "Grand Hotel Baglioni", price: "25만원대", desc: "루프탑 전망 최고" }
+                        ]
+                    }
+                }
+            },
+            "스위스": {
+                desc: "알프스의 대자연과 힐링",
+                cities: {
+                    "인터라켄": {
+                        attractions: [
+                            { name: "융프라우요흐", desc: "유럽의 지붕", img: "./images/europe/switzerland/interlaken/jungfrau.jpg" },
+                            { name: "브리엔츠 호수", desc: "에메랄드빛 호수", img: "./images/europe/switzerland/interlaken/brienz.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Hooters", desc: "활기찬 분위기", img: "./images/europe/switzerland/interlaken/hooters.jpg" },
+                            { name: "Des Alpes", desc: "스위스 전통 퐁듀", img: "./images/europe/switzerland/interlaken/des_alpes.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Funky Chocolate", desc: "초콜릿 체험 카페", img: "./images/europe/switzerland/interlaken/funky_choco.jpg" }],
+                            study: [{ name: "Spatz", desc: "조용한 베이커리", img: "./images/europe/switzerland/interlaken/spatz.jpg" }]
+                        },
+                        activities: ["패러글라이딩", "튠 호수 유람선"],
+                        hotels: [
+                            { name: "Victoria Jungfrau", price: "60만원대", desc: "최고급 럭셔리" },
+                            { name: "Balmers Hostel", price: "5만원대", desc: "파티 호스텔" }
+                        ]
+                    },
+                    "루체른": {
+                        attractions: [
+                            { name: "카펠교", desc: "유럽 최고(最古)의 목조 다리", img: "./images/europe/switzerland/luzern/kapell_bridge.jpg" },
+                            { name: "리기산", desc: "산들의 여왕", img: "./images/europe/switzerland/luzern/rigi.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Old Swiss House", desc: "전통 슈니첼 맛집", img: "./images/europe/switzerland/luzern/old_swiss.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Bachmann", desc: "루체른 대표 초콜릿", img: "./images/europe/switzerland/luzern/bachmann.jpg" }],
+                            study: [{ name: "Heini", desc: "케이크가 맛있는 카페", img: "./images/europe/switzerland/luzern/heini.jpg" }]
+                        },
+                        activities: ["루체른 호수 유람선", "빈사의 사자상 방문"],
+                        hotels: [
+                            { name: "Hotel des Balances", price: "35만원대", desc: "강변 낭만 호텔" }
+                        ]
+                    }
+                }
+            },
+            "독일": {
+                desc: "맥주와 역사의 나라",
+                cities: {
+                    "베를린": {
+                        attractions: [
+                            { name: "브란덴부르크 문", desc: "베를린의 상징", img: "./images/europe/germany/berlin/brandenburg_gate.jpg" },
+                            { name: "이스트 사이드 갤러리", desc: "베를린 장벽의 예술", img: "./images/europe/germany/berlin/east_side_gallery.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Curry 36", desc: "베를린 소울푸드 커리부어스트", img: "./images/europe/germany/berlin/curry36.jpg" },
+                            { name: "Burgermeister", desc: "화장실(..) 개조 힙한 버거집", img: "./images/europe/germany/berlin/burgermeister.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "The Barn", desc: "베를린 3대 커피", img: "./images/europe/germany/berlin/the_barn.jpg" }],
+                            study: [{ name: "St. Oberholz", desc: "디지털 노마드의 성지", img: "./images/europe/germany/berlin/oberholz.jpg" }]
+                        },
+                        activities: ["박물관 섬 투어", "클럽 베르크하인 도전"],
+                        hotels: [
+                            { name: "Radisson Collection", price: "25만원대", desc: "거대 수족관 로비" }
+                        ]
+                    },
+                    "뮌헨": {
+                        attractions: [
+                            { name: "마리엔 광장", desc: "뮌헨의 중심", img: "./images/europe/germany/munich/marienplatz.jpg" },
+                            { name: "님펜부르크 궁전", desc: "아름다운 여름 별장", img: "./images/europe/germany/munich/nymphenburg.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Hofbräuhaus", desc: "세계 최대 맥주 홀", img: "./images/europe/germany/munich/hofbrauhaus.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Dallmayr", desc: "왕실 납품 델리카트슨", img: "./images/europe/germany/munich/dallmayr.jpg" }],
+                            study: [{ name: "Man versus Machine", desc: "스페셜티 커피", img: "./images/europe/germany/munich/man_vs_machine.jpg" }]
+                        },
+                        activities: ["옥토버페스트(9월~10월)", "BMW 박물관"],
+                        hotels: [
+                            { name: "Bayerischer Hof", price: "40만원대", desc: "전통의 명문 호텔" }
+                        ]
+                    },
+                    "밤베르크": {
+                        attractions: [
+                            { name: "구 시청사", desc: "강 위에 떠 있는 건축물", img: "./images/europe/germany/bamberg/old_town_hall.jpg" },
+                            { name: "작은 베네치아", desc: "라인 운하의 풍경", img: "./images/europe/germany/bamberg/little_venice.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Schlenkerla", desc: "훈제 맥주(라우흐비어)의 원조", img: "./images/europe/germany/bamberg/schlenkerla.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "Café Müller", desc: "아늑한 디저트 카페", img: "./images/europe/germany/bamberg/cafe_muller.jpg" }],
+                            study: [{ name: "Stadtbibliothek", desc: "도서관", img: "./images/europe/germany/bamberg/library.jpg" }]
+                        },
+                        activities: ["훈제 맥주 마시기", "구시가지 골목 탐방"],
+                        hotels: [
+                            { name: "Hotel Nepomuk", price: "15만원대", desc: "물 위의 호텔" }
+                        ]
+                    }
+                }
+            },
+            "이집트": {
+                desc: "파라오의 신비와 사막의 매력",
+                cities: {
+                    "카이로": {
+                        attractions: [
+                            { name: "기자 피라미드", desc: "세계 7대 불가사의", img: "./images/africa/egypt/cairo/pyramids.jpg" },
+                            { name: "스핑크스", desc: "피라미드의 수호자", img: "./images/africa/egypt/cairo/sphinx.jpg" },
+                            { name: "이집트 박물관", desc: "투탕카멘의 황금 가면", img: "./images/africa/egypt/cairo/museum.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "Abou Tarek", desc: "코샤리(이집트 국민식) 맛집", img: "./images/africa/egypt/cairo/abou_tarek.jpg" },
+                            { name: "Felfela", desc: "정통 이집트 요리", img: "./images/africa/egypt/cairo/felfela.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [{ name: "El Fishawy", desc: "200년 된 칸 엘 칼릴리 카페", img: "./images/africa/egypt/cairo/el_fishawy.jpg" }],
+                            study: [{ name: "Espresso Lab", desc: "현대적인 커피 공간", img: "./images/africa/egypt/cairo/espresso_lab.jpg" }]
+                        },
+                        activities: ["나일강 펠루카 타기", "칸 엘 칼릴리 시장 쇼핑"],
+                        hotels: [
+                            { name: "Marriott Mena House", price: "40만원대", desc: "피라미드 뷰 호텔" },
+                            { name: "Steigenberger", price: "15만원대", desc: "타흐리르 광장 인근" }
+                        ]
+                    }
+                }
+            }
+        }
+
+            ;
+
+        // Regional Data Configuration
+        const regionData = {
+            "아시아·호주": ["호주", "일본", "필리핀", "중국", "라오스"],
+            "아메리카": ["미국"],
+            "유럽": ["영국", "프랑스", "이탈리아", "스위스", "독일"],
+            "아프리카": ["이집트"]
         };
+
+        ;
+
+        let currentRegion = null;
+
+        // Render Navigation Bar
+        function renderNavigation() {
+            const navContainer = document.getElementById('region-nav');
+            if (!navContainer) return;
+            navContainer.innerHTML = '';
+
+            for (const [region, countries] of Object.entries(regionData)) {
+                const li = document.createElement('li');
+                li.className = 'region-item';
+
+                // Region Button
+                const btn = document.createElement('button');
+                btn.className = 'region-btn';
+
+                btn.innerHTML = `${region
+                    }
+
+                <span style="font-size: 0.8rem">▼</span>`;
+                btn.onclick = (e) => toggleRegion(region, li);
+
+                li.appendChild(btn);
+
+                // Country Dropdown (if countries exist)
+                if (countries.length > 0) {
+                    const dropdown = document.createElement('div');
+                    dropdown.className = 'country-dropdown';
+
+                    countries.forEach(country => {
+                        const link = document.createElement('div');
+                        link.className = 'country-link';
+                        link.textContent = country;
+
+                        link.onclick = (e) => {
+                            e.stopPropagation();
+                            handleCountrySelect(country);
+                        }
+
+                            ;
+                        dropdown.appendChild(link);
+                    });
+
+                    li.appendChild(dropdown);
+                }
+
+                navContainer.appendChild(li);
+            }
+        }
+
+        // Toggle Region Dropdown
+        function toggleRegion(region, element) {
+            if (currentRegion === region) {
+                element.classList.remove('active');
+                currentRegion = null;
+                return;
+            }
+
+            document.querySelectorAll('.region-item').forEach(el => el.classList.remove('active'));
+
+            element.classList.add('active');
+            currentRegion = region;
+        }
+
+        // Handle Country Selection
+        function handleCountrySelect(country) {
+            if (!travelData[country]) return;
+
+            // Use existing openCountry logic but we might need to adapt it 
+            // if openCountry expects a slide click. 
+            // Currently openCountry calls selectCity(firstCity).
+            // Let's reuse openCountry as it handles view switching and rendering.
+            openCountry(country);
+
+            // Close dropdowns
+            document.querySelectorAll('.region-item').forEach(el => el.classList.remove('active'));
+            currentRegion = null;
+        }
+
+        // Initialize Navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNavigation();
+        });
 
         let currentSlide = 0;
         const countries = Object.keys(travelData);
@@ -915,19 +1448,31 @@
         let selectedCity = "";
 
         const slideContainer = document.getElementById('slide-container');
+
         countries.forEach((country, idx) => {
             const slide = document.createElement('div');
-            slide.className = `slide ${idx === 0 ? 'active' : ''}`;
-            const imgKeys = { "미국": "usa", "일본": "japan", "호주": "australia", "중국": "china", "필리핀": "philippines", "라오스": "laos" };
+
+            slide.className = `slide ${idx === 0 ? 'active' : ''
+                }
+
+                `;
+
+            const imgKeys = {
+                "미국": "usa", "일본": "japan", "호주": "australia", "중국": "china", "필리핀": "philippines", "라오스": "laos",
+                "영국": "uk", "프랑스": "france", "이탈리아": "italy", "스위스": "switzerland", "독일": "germany", "이집트": "egypt"
+            }
+
+                ;
             const imgKey = imgKeys[country] || "travel";
             slide.style.backgroundImage = `url('images/${imgKey}_main.jpg')`;
-            slide.innerHTML = `
-                <div class="slide-content">
-                    <h2>${country}</h2>
-                    <p>${travelData[country].desc}</p>
-                    <button class="explore-btn" onclick="openCountry('${country}')">EXPLORE NOW</button>
-                </div>
-            `;
+
+            slide.innerHTML = ` <div class="slide-content" > <h2>${country
+                }
+
+                </h2> <p>${travelData[country].desc
+                }
+
+                </p> <button class="explore-btn" onclick="openCountry('${country}', true)" >EXPLORE NOW</button> </div> `;
             slideContainer.appendChild(slide);
         });
 
@@ -967,9 +1512,7 @@
             smoothScrollTo(0, 2000); // 2 seconds to go back up
         }
 
-
-
-        function openCountry(country) {
+        function openCountry(country, scrollDown = false) {
             selectedCountry = country;
             const subPage = document.getElementById('sub-page');
             document.getElementById('country-title').innerText = country;
@@ -981,9 +1524,14 @@
             const cityTabs = document.getElementById('city-tabs');
             cityTabs.innerHTML = "";
             const cityList = Object.keys(travelData[country].cities);
+
             cityList.forEach((city, idx) => {
                 const btn = document.createElement('button');
-                btn.className = `city-btn ${idx === 0 ? 'active' : ''}`;
+
+                btn.className = `city-btn ${idx === 0 ? 'active' : ''
+                    }
+
+                    `;
                 btn.innerText = city;
                 btn.onclick = () => selectCity(city, btn);
                 cityTabs.appendChild(btn);
@@ -993,10 +1541,30 @@
             // 3. 렌더링 완료 대기 후 스크롤
             // 3. 부드럽게 천천히 이동 (커스텀 함수 사용, 2.5초)
             // 약간의 지연을 주어 렌더링이 확실히 끝난 후 이동
-            setTimeout(() => {
+            // Sync Slider
+            const countryIdx = countries.indexOf(country);
+            if (countryIdx !== -1) {
+                setSlide(countryIdx);
+            }
+
+            // Scroll Logic
+            if (scrollDown) {
+                const subPage = document.getElementById('sub-page');
                 const targetPos = subPage.getBoundingClientRect().top + window.pageYOffset;
-                smoothScrollTo(targetPos, 2500);
-            }, 100);
+                smoothScrollTo(targetPos, 1500);
+            } else {
+                // Scroll to Top (Hero Slider)
+                smoothScrollTo(0, 1500);
+            }
+        }
+
+        function setSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            if (!slides[index]) return;
+
+            slides[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
         }
 
         function selectCity(city, btn) {
@@ -1009,28 +1577,84 @@
         function showCategory(category) {
             const data = travelData[selectedCountry].cities[selectedCity];
             const display = document.getElementById('content-display');
+
             document.querySelectorAll('.cat-link').forEach(l => {
                 l.classList.remove('active');
                 if (l.innerText.includes(category === 'attractions' ? '관광지' : category === 'cafes' ? '카페' : category === 'restaurants' ? '맛집' : category === 'activities' ? '액티비티' : '숙소')) l.classList.add('active');
             });
 
             let html = "";
+
             if (category === 'attractions') {
-                html = data.attractions.map(a => `<div class="item-card"><img src="${a.img}" alt="${a.name}"><div class="item-info"><h4>${a.name}</h4><p>${a.desc}</p></div></div>`).join('');
-            } else if (category === 'restaurants') {
-                // Restaurants might not have images, so we handle that gracefully or use a placeholder
-                html = data.restaurants.map(r => `<div class="item-card">${r.img ? `<img src="${r.img}" alt="${r.name}">` : ''}<div class="item-info"><h4>${r.name}</h4><p>${r.desc}</p></div></div>`).join('');
-            } else if (category === 'cafes') {
-                const vibes = data.cafes.vibe.map(v => `<div class="item-card"><img src="${v.img}" alt="${v.name}"><div class="item-info"><span class="badge vibe">분위기 & 뷰</span><h4>${v.name}</h4><p>${v.desc}</p></div></div>`).join('');
-                const studies = data.cafes.study.map(s => `<div class="item-card"><img src="${s.img}" alt="${s.name}"><div class="item-info"><span class="badge study">카공 & 집중</span><h4>${s.name}</h4><p>${s.desc}</p></div></div>`).join('');
-                html = vibes + studies;
-            } else if (category === 'activities') {
-                html = data.activities.map((act, i) => `<div class="item-card"><img src="${act.img}" alt="${act.name}"><div class="item-info"><h4>${act.name}</h4><p>${act.desc}</p></div></div>`).join('');
-            } else if (category === 'hotels') {
-                html = data.hotels.map(h => `<div class="item-card"><div class="item-info"><h4>🏠 ${h.name}</h4><p>${h.desc}</p><span class="price-tag">${h.price}</span></div></div>`).join('');
+                html = data.attractions.map(a => `<div class="item-card" ><img src="${a.img}" alt="${a.name}" ><div class="item-info" ><h4>${a.name
+                    }
+
+                    </h4><p>${a.desc
+                    }
+
+                    </p></div></div>`).join('');
             }
+
+            else if (category === 'restaurants') {
+
+                // Restaurants might not have images, so we handle that gracefully or use a placeholder
+                html = data.restaurants.map(r => `<div class="item-card" >${r.img ? `<img src = "${r.img}" alt = "${r.name}" > ` : ''
+                    }
+
+                    <div class="item-info" ><h4>${r.name
+                    }
+
+                    </h4><p>${r.desc
+                    }
+
+                    </p></div></div>`).join('');
+            }
+
+            else if (category === 'cafes') {
+                const vibes = data.cafes.vibe.map(v => `<div class="item-card" ><img src="${v.img}" alt="${v.name}" ><div class="item-info" ><span class="badge vibe" >분위기 & 뷰</span><h4>${v.name
+                    }
+
+                    </h4><p>${v.desc
+                    }
+
+                    </p></div></div>`).join('');
+
+                const studies = data.cafes.study.map(s => `<div class="item-card" ><img src="${s.img}" alt="${s.name}" ><div class="item-info" ><span class="badge study" >카공 & 집중</span><h4>${s.name
+                    }
+
+                    </h4><p>${s.desc
+                    }
+
+                    </p></div></div>`).join('');
+                html = vibes + studies;
+            }
+
+            else if (category === 'activities') {
+                html = data.activities.map((act, i) => `<div class="item-card" ><img src="${act.img}" alt="${act.name}" ><div class="item-info" ><h4>${act.name
+                    }
+
+                    </h4><p>${act.desc
+                    }
+
+                    </p></div></div>`).join('');
+            }
+
+            else if (category === 'hotels') {
+                html = data.hotels.map(h => `<div class="item-card" ><div class="item-info" ><h4>🏠 ${h.name
+                    }
+
+                    </h4><p>${h.desc
+                    }
+
+                    </p><span class="price-tag" >${h.price
+                    }
+
+                    </span></div></div>`).join('');
+            }
+
             display.innerHTML = html;
         }
+
     </script>
 </body>
 
