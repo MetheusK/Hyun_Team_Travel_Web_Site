@@ -418,35 +418,222 @@
                 justify-content: space-between;
             }
         }
+
+        /* Intro Page Styles */
+        #intro-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #f0f8ff, #dde6f0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            overflow: hidden;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #intro-page.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: none;
+        }
+
+        #main-content.visible {
+            opacity: 1;
+            display: block;
+        }
+
+        /* D3 Map Styles */
+        .country {
+            stroke: #fff;
+            stroke-width: 0.5px;
+            transition: fill 0.3s, transform 0.3s;
+            cursor: pointer;
+        }
+
+        .country:hover {
+            fill-opacity: 0.8;
+            stroke: #2a9d8f;
+            stroke-width: 1.5px;
+        }
+
+        .map-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            text-align: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transform: translate(-50%, -120%);
+        }
+
+        .map-tooltip h3 {
+            margin: 0 0 10px;
+            color: #222;
+            font-size: 1.2rem;
+        }
+
+        .map-tooltip img {
+            width: 120px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+        }
+
+        /* Plane Animation Path */
+        .flight-path {
+            fill: none;
+            stroke: #2a9d8f;
+            stroke-width: 2px;
+            stroke-dasharray: 10;
+            opacity: 0.6;
+            stroke-linecap: round;
+        }
+
+        .plane-icon {
+            fill: #e76f51;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Next Destination Button Fixed Position when in Country View */
+        .back-to-map-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2a9d8f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 20px rgba(42, 157, 143, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            transition: 0.3s;
+            display: none;
+            /* Shown only when needed via JS */
+        }
+
+        .back-to-map-btn:hover {
+            transform: translateY(-5px);
+            background: #21867a;
+        }
     </style>
+    <!-- D3.js and TopoJSON -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
 </head>
 
 <body>
-    <section class="hero-slider"><button class="nav-btn prev" onclick="moveSlide(-1)">&#10094;
-        </button>
-        <div id="slide-container"></div><button class="nav-btn next" onclick="moveSlide(1)">&#10095;
+    <div id="intro-page"></div>
+    <div id="main-content">
+        <section class="hero-slider"><button class="nav-btn prev" onclick="moveSlide(-1)">&#10094;
+            </button>
+            <div id="slide-container"></div><button class="nav-btn next" onclick="moveSlide(1)">&#10095;
 
-        </button>
-    </section>
-    <main id="sub-page" class="sub-page">
-        <!-- Regional Navigation -->
-        <nav class="region-nav-container">
-            <ul class="region-list" id="region-nav">
-                <!-- Dynamically populated -->
-            </ul>
-        </nav>
-        <h1 id="country-title" style="font-size: 4rem; margin-bottom: 15px;"></h1>
-        <div class="city-tabs" id="city-tabs"></div>
-        <div class="category-menu"><button class="cat-link active" onclick="showCategory('attractions')">🏛️
-                관광지</button><button class="cat-link" onclick="showCategory('restaurants')">🍽️ 맛집 &
-                간식</button><button class="cat-link" onclick="showCategory('cafes')">☕ 추천 카페</button><button
-                class="cat-link" onclick="showCategory('activities')">🏃 액티비티</button><button class="cat-link"
-                onclick="showCategory('hotels')">🏨 가성비 숙소</button></div>
-        <div id="content-display" class="content-grid"></div>
-        <div class="next-dest-container"><button class="next-dest-btn" onclick="scrollToTop()">NEXT
-                DESTINATION</button></div>
-    </main>
+            </button>
+        </section>
+        <main id="sub-page" class="sub-page">
+            <!-- Regional Navigation -->
+            <nav class="region-nav-container">
+                <ul class="region-list" id="region-nav">
+                    <!-- Dynamically populated -->
+                </ul>
+            </nav>
+            <h1 id="country-title" style="font-size: 4rem; margin-bottom: 15px;"></h1>
+            <div class="city-tabs" id="city-tabs"></div>
+            <div class="category-menu"><button class="cat-link active" onclick="showCategory('attractions')">🏛️
+                    관광지</button><button class="cat-link" onclick="showCategory('restaurants')">🍽️ 맛집 &
+                    간식</button><button class="cat-link" onclick="showCategory('cafes')">☕ 추천 카페</button><button
+                    class="cat-link" onclick="showCategory('activities')">🏃 액티비티</button><button class="cat-link"
+                    onclick="showCategory('hotels')">🏨 가성비 숙소</button></div>
+            <div id="content-display" class="content-grid"></div>
+            <div class="next-dest-container"><button class="next-dest-btn" onclick="returnToMap()">NEXT
+                    DESTINATION</button></div>
+
+        </main>
+    </div> <!-- End of #main-content -->
     <script>const travelData = {
+            "대한민국": {
+                desc: "전통과 현대가 공존하는 다채로운 매력의 나라",
+                cities: {
+                    "서울": {
+                        attractions: [
+                            { name: "경복궁", desc: "조선 왕조의 법궁", img: "./images/asia_aus/korea/seoul/gyeongbokgung.jpg" },
+                            { name: "N서울타워", desc: "서울의 랜드마크 전망대", img: "./images/asia_aus/korea/seoul/n_seoul_tower.jpg" },
+                            { name: "북촌 한옥마을", desc: "전통 한옥의 정취", img: "./images/asia_aus/korea/seoul/bukchon_hanok.jpg" },
+                            { name: "명동 거리", desc: "쇼핑과 길거리 음식의 천국", img: "./images/asia_aus/korea/seoul/myeongdong.jpg" },
+                            { name: "롯데월드타워", desc: "대한민국 최고층 빌딩", img: "./images/asia_aus/korea/seoul/lotte_world_tower.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "명동 교자", desc: "칼국수와 만두의 전설", img: "./images/asia_aus/korea/seoul/myeongdong_gyoza.jpg" },
+                            { name: "우래옥", desc: "전통 평양냉면", img: "./images/asia_aus/korea/seoul/wooraeok.jpg" },
+                            { name: "토속촌 삼계탕", desc: "진한 국물의 보양식", img: "./images/asia_aus/korea/seoul/tosokchon.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [
+                                { name: "어니언 안국", desc: "한옥 베이커리 카페", img: "./images/asia_aus/korea/seoul/onion_anguk.jpg" },
+                                { name: "블루보틀 삼청", desc: "한옥 뷰 모던 카페", img: "./images/asia_aus/korea/seoul/bluebottle_samcheong.jpg" }
+                            ],
+                            study: [
+                                { name: "테라로사 포스코점", desc: "책과 커피가 있는 대형 공간", img: "./images/asia_aus/korea/seoul/terarosa_posco.jpg" },
+                                { name: "할리스 커피 세종로점", desc: "광화문 뷰 카공 명소", img: "./images/asia_aus/korea/seoul/hollys_sejongro.jpg" }
+                            ]
+                        },
+                        activities: ["한강 피크닉", "청계천 산책", "홍대 버스킹 관람", "동대문 야시장", "찜질방 체험"],
+                        hotels: [
+                            { name: "신라호텔", price: "40만원대", desc: "최고의 서비스와 전통" },
+                            { name: "L7 명동", price: "15만원대", desc: "트렌디한 라이프스타일 호텔" },
+                            { name: "글래드 마포", price: "12만원대", desc: "공항철도 접근성 최고" }
+                        ]
+                    },
+                    "제주": {
+                        attractions: [
+                            { name: "성산일출봉", desc: "세계자연유산의 일출", img: "./images/asia_aus/korea/jeju/seongsan_ilchulbong.jpg" },
+                            { name: "협재 해수욕장", desc: "에메랄드빛 바다", img: "./images/asia_aus/korea/jeju/hyeopjae_beach.jpg" },
+                            { name: "한라산", desc: "대한민국의 지붕", img: "./images/asia_aus/korea/jeju/hallasan.jpg" },
+                            { name: "카멜리아 힐", desc: "동양에서 가장 큰 동백 수목원", img: "./images/asia_aus/korea/jeju/camellia_hill.jpg" },
+                            { name: "섭지코지", desc: "아름다운 해안 절경", img: "./images/asia_aus/korea/jeju/seopjikoji.jpg" }
+                        ],
+                        restaurants: [
+                            { name: "자매국수", desc: "제주 고기국수 맛집", img: "./images/asia_aus/korea/jeju/jamae_guksu.jpg" },
+                            { name: "숙성도", desc: "제주 흑돼지의 정점", img: "./images/asia_aus/korea/jeju/sukseongdo.jpg" },
+                            { name: "오는정 김밥", desc: "예약 필수 김밥", img: "./images/asia_aus/korea/jeju/oneunjeong_gimbap.jpg" }
+                        ],
+                        cafes: {
+                            vibe: [
+                                { name: "카페 글렌코", desc: "핑크뮬리 명소", img: "./images/asia_aus/korea/jeju/cafe_glencoe.jpg" },
+                                { name: "봄날 카페", desc: "맨도롱 또똣 촬영지", img: "./images/asia_aus/korea/jeju/bomnal_cafe.jpg" }
+                            ],
+                            study: [
+                                { name: "에이바우트 커피", desc: "제주 곳곳의 카공 성지", img: "./images/asia_aus/korea/jeju/about_coffee.jpg" }
+                            ]
+                        },
+                        activities: ["올레길 걷기", "감귤 따기 체험", "우도 자전거 투어", "투명 카약 타기"],
+                        hotels: [
+                            { name: "파르나스 제주", price: "35만원대", desc: "서귀포 절경 호텔" },
+                            { name: "호텔 신화월드", price: "20만원대", desc: "복합 리조트 단지" },
+                            { name: "휘슬락 호텔", price: "8만원대", desc: "공항 근처 가성비 오션뷰" }
+                        ]
+                    }
+                }
+            },
             "호주": {
                 desc: "웅장한 자연과 세련된 시티 라이프의 완벽한 밸런스",
                 cities: {
@@ -462,7 +649,7 @@
                         restaurants: [
                             { name: "허리케인 그릴 (Hurricane's Grill)", desc: "<b>[메뉴]</b> 포크 립(하프), 고구마 튀김<br><b>[특징]</b> 한국인 필수 코스. 양도 맛도 최고.", img: "./images/asia_aus/australia/sydney/sydney_hurricanes_grill.jpg" },
                             { name: "챗 타이 (Chat Thai)", desc: "<b>[메뉴]</b> 팟타이(새우), 똠얌꿍<br><b>[특징]</b> 기름지고 짭짤한 인생 팟타이.", img: "./images/asia_aus/australia/sydney/sydney_chat_thai.jpg" },
-                            { name: "니치 (Niche)", desc: "<b>[메뉴]</b> 스파이시 미소 라멘, 교자<br><b>[특징]</b> 느끼함 달래주는 얼큰한 국물.", img: "./images/asia_aus/australia/sydney/sydney_niche.jpg" },
+                            { name: "니치 (Nichi Getsu Do)", desc: "<b>[메뉴]</b> 스파이시 미소 라멘, 교자<br><b>[특징]</b> 느끼함 달래주는 얼큰한 국물.", img: "./images/asia_aus/australia/sydney/sydney_nichi.jpg" },
                             { name: "베티스 버거 (Betty's Burgers)", desc: "<b>[메뉴]</b> 비프 버거 (본다이 비치)<br><b>[특징]</b> 버터 향 가득한 자극적인 맛.", img: "./images/asia_aus/australia/sydney/sydney_betty_burgers.jpg" },
                             { name: "쉐프 갤러리 (Chefs Gallery)", desc: "<b>[메뉴]</b> 큐브 스테이크, 해산물 볶음면<br><b>[특징]</b> QVB 근처 부드러운 고기 맛집.", img: "./images/asia_aus/australia/sydney/sydney_chefs_gallery.jpg" },
                             { name: "마키아토 (Macchiato)", desc: "<b>[메뉴]</b> 페퍼로니 화덕 피자<br><b>[특징]</b> 짭짤한 도우와 신선한 토핑.", img: "./images/asia_aus/australia/sydney/sydney_macchiato.jpg" },
@@ -1350,7 +1537,7 @@
 
         // Regional Data Configuration
         const regionData = {
-            "아시아·호주": ["호주", "일본", "필리핀", "중국", "라오스"],
+            "아시아·호주": ["대한민국", "호주", "일본", "필리핀", "중국", "라오스"],
             "아메리카": ["미국"],
             "유럽": ["영국", "프랑스", "이탈리아", "스위스", "독일"],
             "아프리카": ["이집트"]
@@ -1459,7 +1646,8 @@
 
             const imgKeys = {
                 "미국": "usa", "일본": "japan", "호주": "australia", "중국": "china", "필리핀": "philippines", "라오스": "laos",
-                "영국": "uk", "프랑스": "france", "이탈리아": "italy", "스위스": "switzerland", "독일": "germany", "이집트": "egypt"
+                "영국": "uk", "프랑스": "france", "이탈리아": "italy", "스위스": "switzerland", "독일": "germany", "이집트": "egypt",
+                "대한민국": "korea"
             }
 
                 ;
@@ -1472,7 +1660,9 @@
                 </h2> <p>${travelData[country].desc
                 }
 
-                </p> <button class="explore-btn" onclick="openCountry('${country}', true)" >EXPLORE NOW</button> </div> `;
+                </p> <button class="explore-btn" onclick="openCountry('${country}', true)" >EXPLORE NOW</button> <div style="margin-top: 20px;">
+                <button class="next-dest-slide-btn" onclick="returnToMap()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 12px 30px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; backdrop-filter: blur(5px);">NEXT DESTINATION ✈️</button>
+                </div> </div> `;
             slideContainer.appendChild(slide);
         });
 
@@ -1513,6 +1703,20 @@
         }
 
         function openCountry(country, scrollDown = false) {
+            // [Fix] Enforce Visibility State
+            const intro = document.getElementById('intro-page');
+            const main = document.getElementById('main-content');
+            if (intro) intro.classList.add('hidden');
+            if (main) {
+                main.classList.add('visible');
+                main.style.opacity = "1"; // Ensure opacity
+            }
+
+            // Sync Map Logic State
+            if (window.updateLastCountry) {
+                window.updateLastCountry(country);
+            }
+
             selectedCountry = country;
             const subPage = document.getElementById('sub-page');
             document.getElementById('country-title').innerText = country;
@@ -1656,6 +1860,7 @@
         }
 
     </script>
+    <script src="./scripts/map_logic.js"></script>
 </body>
 
 </html>
