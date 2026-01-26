@@ -24,6 +24,7 @@
         "중국": "156", "China": "156",
         "필리핀": "608", "Philippines": "608",
         "라오스": "418", "Laos": "418",
+        "타이": "764", "Thailand": "764",
         "영국": "826", "United Kingdom": "826",
         "프랑스": "250", "France": "250",
         "이탈리아": "380", "Italy": "380",
@@ -86,13 +87,15 @@
             .attr("d", path)
             .attr("fill", d => {
                 const id = String(d.id).padStart(3, '0');
-                const isServiced = Object.values(countryMapping).includes(id);
-                return isServiced ? "#a8dadc" : "#e0e0e0";
+                const name = getNameById(id);
+                // [Fix] Only color if explicitly in servicedCountries (returned by getNameById)
+                return name ? "#a8dadc" : "#e0e0e0";
             })
             .attr("stroke", "#ffffff")
             .style("cursor", d => {
                 const id = String(d.id).padStart(3, '0');
-                return Object.values(countryMapping).includes(id) ? "pointer" : "default";
+                // [Fix] Pointer only if serviced
+                return getNameById(id) ? "pointer" : "default";
             })
             .on("mouseover", function (event, d) {
                 if (isGlobe) return;
@@ -100,7 +103,7 @@
                 const id = String(d.id).padStart(3, '0');
                 const name = getNameById(id);
 
-                if (servicedCountries.includes(name)) {
+                if (name) {
                     d3.select(this)
                         .transition().duration(200)
                         .attr("fill", "#457b9d");
@@ -129,11 +132,11 @@
                 if (isGlobe) return;
 
                 const id = String(d.id).padStart(3, '0');
-                const isServiced = Object.values(countryMapping).includes(id);
+                const name = getNameById(id);
 
                 d3.select(this)
                     .transition().duration(200)
-                    .attr("fill", isServiced ? "#a8dadc" : "#e0e0e0");
+                    .attr("fill", name ? "#a8dadc" : "#e0e0e0");
 
                 tooltip.style("opacity", 0).style("left", "-9999px");
             })
@@ -142,7 +145,7 @@
 
                 const id = String(d.id).padStart(3, '0');
                 const name = getNameById(id);
-                if (servicedCountries.includes(name)) {
+                if (name) {
                     tooltip.style("opacity", 0).remove();
                     zoomToGlobe(d, name);
                 }
@@ -156,51 +159,111 @@
         return null;
     }
 
+    // [New] Helper for projection interpolation
+    function rawProjectionInterpolate(a, b, t) {
+        return function (lambda, phi) {
+            const pa = a(lambda, phi); // Plane
+            const pb = b(lambda, phi); // Sphere
+            return [
+                pa[0] * (1 - t) + pb[0] * t,
+                pa[1] * (1 - t) + pb[1] * t
+            ];
+        };
+    }
+
+    // [New] Centroid Overrides for specific countries (e.g. France mainland)
+    const centroidOverrides = {
+        "프랑스": [2.2137, 46.2276], // Mainland France
+        "France": [2.2137, 46.2276],
+        "미국": [-95.7129, 37.0902], // Mainland USA (approx)
+        "United States of America": [-95.7129, 37.0902]
+    };
+
+    function getCentroid(feature, name) {
+        if (centroidOverrides[name]) {
+            return centroidOverrides[name];
+        }
+        return d3.geoCentroid(feature);
+    }
+
     function zoomToGlobe(targetFeature, targetName) {
         isGlobe = true;
 
-        const centroid = d3.geoCentroid(targetFeature);
-        const [x, y] = projection(centroid);
+        // [Modified] 1. Calculate centroid for STARTING country
+        // Find start feature
+        const startId = countryMapping[lastCountry];
+        let startFeature = geoData.features.find(f => String(f.id).padStart(3, '0') === startId);
+        if (!startFeature) {
+            startFeature = geoData.features.find(f => String(f.id).padStart(3, '0') === "410"); // Default Korea
+        }
 
-        mapGroup.transition()
-            .duration(1000)
-            .attr("transform", `translate(${width / 2}, ${height / 2}) scale(4) translate(${-x}, ${-y})`)
-            .style("opacity", 0)
-            .on("end", () => {
-                mapGroup.remove();
-                createGlobeAndFly(targetFeature, targetName);
-            });
-    }
+        // Use Start Feature for Morph Rotation Target
+        const centroid = getCentroid(startFeature, lastCountry);
+        const targetRotate = [-centroid[0], -centroid[1]];
 
-    function createGlobeAndFly(targetFeature, targetName) {
-        const globeGroup = svg.append("g").attr("class", "globe-group").style("opacity", 0);
+        // 2. Prepare Interpolation
+        const startScale = projection.scale();
+        const endScale = width / 5.0;
+        const startRotate = [0, 0];
 
-        const scaleEnd = width / 5.0;
-
-        const globeProjection = d3.geoOrthographic()
-            .scale(scaleEnd)
-            .translate([width / 2, height / 2])
-            .clipAngle(90);
-
-        const globePath = d3.geoPath().projection(globeProjection);
-
-        globeGroup.append("circle")
+        // 3. Add Ocean background
+        const ocean = mapGroup.insert("circle", ":first-child")
             .attr("cx", width / 2)
             .attr("cy", height / 2)
-            .attr("r", scaleEnd)
-            .attr("fill", "#f0f8ff");
+            .attr("r", endScale)
+            .attr("fill", "#f0f8ff")
+            .style("opacity", 0);
 
-        globeGroup.selectAll("path")
-            .data(geoData.features)
-            .enter().append("path")
-            .attr("d", globePath)
-            .attr("fill", d => {
-                const id = String(d.id).padStart(3, '0');
-                const isServiced = Object.values(countryMapping).includes(id);
-                return isServiced ? "#a8dadc" : "#e0e0e0";
-            })
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 0.5);
+        // 4. Animation
+        const duration = 1500;
+        const timer = d3.timer((elapsed) => {
+            const t = Math.min(1, elapsed / duration);
+            const easeT = d3.easeCubicInOut(t);
+
+            // Mix projections
+            const mixedRawProjection = rawProjectionInterpolate(
+                d3.geoEquirectangularRaw,
+                d3.geoOrthographicRaw,
+                easeT
+            );
+
+            // Update projection
+            const currentScale = startScale * (1 - easeT) + endScale * easeT;
+            const currentRotate = [
+                startRotate[0] * (1 - easeT) + targetRotate[0] * easeT,
+                startRotate[1] * (1 - easeT) + targetRotate[1] * easeT
+            ];
+
+            projection = d3.geoProjection(mixedRawProjection)
+                .scale(currentScale)
+                .translate([width / 2, height / 2])
+                .rotate(currentRotate)
+                .clipAngle(90 + (180 - 90) * (1 - easeT));
+
+            path.projection(projection);
+
+            mapGroup.selectAll("path").attr("d", path);
+
+            ocean.style("opacity", easeT);
+
+            // 5. End of morph
+            if (t >= 1) {
+                timer.stop();
+                startFlight(targetFeature, targetName, targetRotate, ocean);
+            }
+        });
+    }
+
+    function startFlight(targetFeature, targetName, targetRotate, oceanCircle) {
+        // Fix to pure Orthographic
+        projection = d3.geoOrthographic()
+            .scale(width / 5.0)
+            .translate([width / 2, height / 2])
+            .rotate(targetRotate)
+            .clipAngle(90);
+
+        path.projection(projection);
+        mapGroup.selectAll("path").attr("d", path);
 
         const startId = countryMapping[lastCountry];
         let startFeature = geoData.features.find(f => String(f.id).padStart(3, '0') === startId);
@@ -209,18 +272,14 @@
             startFeature = geoData.features.find(f => String(f.id).padStart(3, '0') === "410");
         }
 
-        const endFeature = targetFeature;
+        const startCentroid = getCentroid(startFeature, lastCountry);
+        const endCentroid = getCentroid(targetFeature, targetName);
 
-        const startCentroid = d3.geoCentroid(startFeature);
-        const endCentroid = d3.geoCentroid(endFeature);
+        // Rotate to starting point
+        projection.rotate([-startCentroid[0], -startCentroid[1]]);
+        mapGroup.selectAll("path").attr("d", path);
 
-        globeProjection.rotate([-startCentroid[0], -startCentroid[1]]);
-        globeGroup.selectAll("path").attr("d", globePath);
-
-        globeGroup.transition().duration(500).style("opacity", 1)
-            .on("end", () => {
-                animateFlight(globeProjection, globePath, globeGroup, startCentroid, endCentroid, targetName);
-            });
+        animateFlight(projection, path, mapGroup, startCentroid, endCentroid, targetName);
     }
 
     function animateFlight(projection, path, group, startCentroid, endCentroid, targetName) {
@@ -229,13 +288,12 @@
         const r1 = [-endCentroid[0], -endCentroid[1]];
         const interpolateRot = d3.interpolate(r0, r1);
 
-        let lastAngle = 0; // Store last valid angle
+        let lastAngle = 0;
 
         // Calculate Initial Angle
         const initialP = projection(endCentroid);
         if (initialP) {
             const dist = Math.sqrt(Math.pow(initialP[0] - width / 2, 2) + Math.pow(initialP[1] - height / 2, 2));
-            // Only calculate if not directly on center (which shouldn't happen at start usually)
             if (dist > 1) {
                 lastAngle = Math.atan2(initialP[1] - height / 2, initialP[0] - width / 2) * 180 / Math.PI;
             }
@@ -266,19 +324,16 @@
                     projection.rotate(currentRot);
                     group.selectAll("path").attr("d", path);
 
-                    // Update Angle
-                    // Stop updating angle near the end to avoid instability (singularity at center)
                     if (easeT < 0.95) {
                         const currentP = projection(endCentroid);
                         if (currentP) {
                             const dist = Math.sqrt(Math.pow(currentP[0] - width / 2, 2) + Math.pow(currentP[1] - height / 2, 2));
-                            if (dist > 5) { // Threshold in pixels
+                            if (dist > 5) {
                                 lastAngle = Math.atan2(currentP[1] - height / 2, currentP[0] - width / 2) * 180 / Math.PI;
                                 plane.attr("transform", `rotate(${lastAngle + 45}, ${width / 2}, ${height / 2})`);
                             }
                         }
                     }
-                    // If easeT >= 0.95, we keep the plane at 'lastAngle' which points towards the goal
 
                     if (t === 1) {
                         flightTimer.stop();
@@ -299,13 +354,9 @@
         const intro = d3.select("#intro-page");
         intro.classed("hidden", true);
 
-        // [Fix] Force Visibility Hidden after transition to prevent overlay
-        // We use a small timeout to allow the transition to start/run, 
-        // but since we want to be safe, we can just use pointer-events:none which is in CSS.
-        // However, user reports overlay. Let's use visibility hidden with delay.
         setTimeout(() => {
             intro.style("visibility", "hidden");
-        }, 1000); // 1s matches CSS transition duration
+        }, 1000);
 
         d3.select("#main-content").classed("visible", true);
 
@@ -328,12 +379,10 @@
     window.returnToMap = function () {
         stopTimers();
 
-        // [Fix] Immediately make intro visible (but transparent) to prepare for fade-in
         const intro = d3.select("#intro-page");
         intro.style("visibility", "visible");
-        intro.style("display", "flex"); // Ensure flex display is restored if lost
+        intro.style("display", "flex");
 
-        // Remove hidden class immediately to let D3 control opacity via style
         intro.classed("hidden", false);
         intro.style("opacity", "0");
 
@@ -344,11 +393,9 @@
                     .classed("visible", false)
                     .style("opacity", null);
 
-                // Determine start opacity (0) and animate to 1
                 intro.transition().duration(500)
                     .style("opacity", 1)
                     .on("end", () => {
-                        // Ensure clear state
                         intro.style("opacity", null);
                     });
 
