@@ -71,8 +71,10 @@
     }
 
     function renderMap(data, tooltip) {
+        // [Responsive] Larger scale for mobile
+        const scaleFactor = width < 768 ? 2.5 : 6.5;
         projection = d3.geoEquirectangular()
-            .scale(width / 6.5)
+            .scale(width / scaleFactor)
             .translate([width / 2, height / 2])
             .rotate([0, 0, 0]);
 
@@ -203,7 +205,9 @@
 
         // 2. Prepare Interpolation
         const startScale = projection.scale();
-        const endScale = width / 5.0;
+        // [Responsive] Larger globe for mobile
+        const endScaleFactor = width < 768 ? 2.0 : 5.0;
+        const endScale = width / endScaleFactor;
         const startRotate = [0, 0];
 
         // 3. Add Ocean background
@@ -256,8 +260,10 @@
 
     function startFlight(targetFeature, targetName, targetRotate, oceanCircle) {
         // Fix to pure Orthographic
+        // [Responsive] Larger globe for mobile
+        const scaleFactor = width < 768 ? 2.0 : 5.0;
         projection = d3.geoOrthographic()
-            .scale(width / 5.0)
+            .scale(width / scaleFactor)
             .translate([width / 2, height / 2])
             .rotate(targetRotate)
             .clipAngle(90);
