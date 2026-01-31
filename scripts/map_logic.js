@@ -218,8 +218,19 @@
             .attr("fill", "#f0f8ff")
             .style("opacity", 0);
 
+        // [New] Add Graticule (Grid)
+        const graticule = d3.geoGraticule();
+        const gridPath = mapGroup.insert("path", ".country") // Insert before countries
+            .datum(graticule())
+            .attr("class", "graticule")
+            .attr("d", path)
+            .attr("fill", "none")
+            .attr("stroke", "#rgba(0,0,0,0.1)")
+            .attr("stroke-width", "0.5px")
+            .style("opacity", 0);
+
         // 4. Animation
-        const duration = 1500;
+        const duration = 1200;
         const timer = d3.timer((elapsed) => {
             const t = Math.min(1, elapsed / duration);
             const easeT = d3.easeCubicInOut(t);
@@ -242,23 +253,33 @@
                 .scale(currentScale)
                 .translate([width / 2, height / 2])
                 .rotate(currentRotate)
-                .clipAngle(90 + (180 - 90) * (1 - easeT));
+                .clipAngle(90 + (179.9 - 90) * (1 - easeT))
+                .precision(0.1);
 
             path.projection(projection);
 
-            mapGroup.selectAll("path").attr("d", path);
+            mapGroup.selectAll("path.country").attr("d", path);
+            // Update Graticule
+            gridPath.attr("d", path);
 
             ocean.style("opacity", easeT);
+            gridPath.style("opacity", easeT * 0.3); // Fade in grid slightly
 
             // 5. End of morph
             if (t >= 1) {
                 timer.stop();
-                startFlight(targetFeature, targetName, targetRotate, ocean);
+
+                // [Modified] Check if start and end countries are the same
+                if (lastCountry === targetName) {
+                    finishArrival(targetName);
+                } else {
+                    startFlight(targetFeature, targetName, targetRotate, ocean, gridPath);
+                }
             }
         });
     }
 
-    function startFlight(targetFeature, targetName, targetRotate, oceanCircle) {
+    function startFlight(targetFeature, targetName, targetRotate, oceanCircle, gridPath) {
         // Fix to pure Orthographic
         // [Responsive] Larger globe for mobile
         const scaleFactor = width < 768 ? 2.0 : 5.0;
@@ -269,6 +290,9 @@
             .clipAngle(90);
 
         path.projection(projection);
+        mapGroup.selectAll("path.country").attr("d", path); // Update countries
+        if (gridPath) gridPath.attr("d", path); // Update grid
+
         mapGroup.selectAll("path").attr("d", path);
 
         const startId = countryMapping[lastCountry];
@@ -283,27 +307,38 @@
 
         // Rotate to starting point
         projection.rotate([-startCentroid[0], -startCentroid[1]]);
-        mapGroup.selectAll("path").attr("d", path);
+        mapGroup.selectAll("path.country").attr("d", path);
+        if (gridPath) gridPath.attr("d", path);
 
-        animateFlight(projection, path, mapGroup, startCentroid, endCentroid, targetName);
+        animateFlight(projection, path, mapGroup, startCentroid, endCentroid, targetName, gridPath);
     }
 
-    function animateFlight(projection, path, group, startCentroid, endCentroid, targetName) {
-        const flightDuration = 2000;
-        const r0 = [-startCentroid[0], -startCentroid[1]];
-        const r1 = [-endCentroid[0], -endCentroid[1]];
-        const interpolateRot = d3.interpolate(r0, r1);
+    function animateFlight(projection, path, group, startCentroid, endCentroid, targetName, gridPath) {
+        const flightDuration = 1600;
+
+        // [Modified] Use Great Circle Interpolation (Geo Interpolate)
+        // This calculates the [lon, lat] along the shortest path on the sphere
+        const interpolatePos = d3.geoInterpolate(startCentroid, endCentroid);
 
         let lastAngle = 0;
 
         // Calculate Initial Angle
-        const initialP = projection(endCentroid);
-        if (initialP) {
-            const dist = Math.sqrt(Math.pow(initialP[0] - width / 2, 2) + Math.pow(initialP[1] - height / 2, 2));
-            if (dist > 1) {
-                lastAngle = Math.atan2(initialP[1] - height / 2, initialP[0] - width / 2) * 180 / Math.PI;
-            }
-        }
+        // Calculate Initial Angle using Spherical Geometry (Bearing)
+        const toRad = (deg) => deg * Math.PI / 180;
+        const toDeg = (rad) => rad * 180 / Math.PI;
+
+        const lon1 = toRad(startCentroid[0]);
+        const lat1 = toRad(startCentroid[1]);
+        const lon2 = toRad(endCentroid[0]);
+        const lat2 = toRad(endCentroid[1]);
+
+        const dLon = lon2 - lon1;
+
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+        const bearing = toDeg(Math.atan2(y, x)); // Bearing relative to North (0 deg), Clockwise
+        lastAngle = bearing - 90; // Convert to SVG Angle (0 is East)
 
         const plane = svg.append("text")
             .attr("class", "plane-icon")
@@ -326,9 +361,11 @@
 
                     const easeT = d3.easeCubicInOut(t);
 
-                    const currentRot = interpolateRot(easeT);
-                    projection.rotate(currentRot);
-                    group.selectAll("path").attr("d", path);
+                    // [Modified] Rotate to center the current interpolated position
+                    const currentPos = interpolatePos(easeT);
+                    projection.rotate([-currentPos[0], -currentPos[1]]);
+                    group.selectAll("path.country").attr("d", path);
+                    if (gridPath) gridPath.attr("d", path);
 
                     if (easeT < 0.95) {
                         const currentP = projection(endCentroid);
