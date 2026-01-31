@@ -144,6 +144,8 @@
             })
             .on("click", function (event, d) {
                 if (isGlobe) return;
+                // [Modified] Prevent click processing if it was a drag
+                if (event.defaultPrevented) return;
 
                 const id = String(d.id).padStart(3, '0');
                 const name = getNameById(id);
@@ -152,6 +154,25 @@
                     zoomToGlobe(d, name);
                 }
             });
+
+        // [New] Add Drag Behavior for Panning
+        const drag = d3.drag()
+            .on("drag", (event) => {
+                if (isGlobe) return; // Disable panning if already in globe mode
+
+                const rotate = projection.rotate();
+                const k = 75 / projection.scale(); // Sensitivity
+
+                // Update rotation (horizontal panning only usually feels best for maps)
+                projection.rotate([rotate[0] + event.dx * k, rotate[1]]);
+
+                mapGroup.selectAll("path").attr("d", path);
+
+                // Hide tooltip during drag
+                tooltip.style("opacity", 0);
+            });
+
+        svg.call(drag);
     }
 
     function getNameById(id) {
