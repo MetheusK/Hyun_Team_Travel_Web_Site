@@ -386,6 +386,18 @@ html {
     }
 }
 
+@keyframes fadeInDownMobile {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 768px) {
     .region-list {
         flex-direction: column;
@@ -397,12 +409,13 @@ html {
         transform: none;
         box-shadow: none;
         border: none;
-        padding-left: 20px;
+        padding: 8px 0;
         display: none;
     }
 
     .region-item.active .country-dropdown {
         display: flex;
+        animation: fadeInDownMobile 0.25s ease;
     }
 
     .region-btn.active::after {
