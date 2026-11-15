@@ -72,7 +72,9 @@
         if (geoData) {
             renderMap(geoData, tooltip);
         } else {
-            d3.json("https://unpkg.com/world-atlas@2.0.2/countries-110m.json").then(world => {
+            d3.json("./data/countries-110m.json")
+                .catch(() => d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json"))
+                .then(world => {
                 geoData = topojson.feature(world, world.objects.countries);
                 // Add synthetic polygon for Singapore (702) since 110m resolution omits microstates
                 if (!geoData.features.some(f => String(f.id).padStart(3, '0') === "702")) {
@@ -280,21 +282,18 @@
     function zoomToGlobe(targetFeature, targetName) {
         isGlobe = true;
 
-        // [Modified] 1. Calculate centroid for STARTING country
-        // Find start feature
+        // 1. Calculate centroid for STARTING country
         const startId = countryMapping[lastCountry];
         let startFeature = geoData.features.find(f => String(f.id).padStart(3, '0') === startId);
         if (!startFeature) {
             startFeature = geoData.features.find(f => String(f.id).padStart(3, '0') === "410"); // Default Korea
         }
 
-        // Use Start Feature for Morph Rotation Target
         const centroid = getCentroid(startFeature, lastCountry);
         const targetRotate = [-centroid[0], -centroid[1]];
 
         // 2. Prepare Interpolation
         const startScale = projection.scale();
-        // [Responsive] Larger globe for mobile
         const endScaleFactor = width < 768 ? 2.0 : 5.0;
         const endScale = width / endScaleFactor;
         const startRotate = [0, 0];
@@ -307,58 +306,67 @@
             .attr("fill", "#f0f8ff")
             .style("opacity", 0);
 
-        // [New] Add Graticule (Grid)
+        // 4. Add Graticule (Grid)
         const graticule = d3.geoGraticule();
-        const gridPath = mapGroup.insert("path", ".country") // Insert before countries
+        const gridPath = mapGroup.insert("path", ".country")
             .datum(graticule())
             .attr("class", "graticule")
             .attr("d", path)
             .attr("fill", "none")
-            .attr("stroke", "#rgba(0,0,0,0.1)")
+            .attr("stroke", "rgba(0,0,0,0.1)")
             .attr("stroke-width", "0.5px")
             .style("opacity", 0);
 
-        // 4. Animation
-        const duration = 1200;
+        // 5. Morph Animation: compose geoClipAntimeridian + shrinking geoClipCircle(179.5 -> 90)
+        // so +/-180deg countries never stretch horizontally AND the back hemisphere never shows through
+        const duration = 1000;
         const timer = d3.timer((elapsed) => {
             const t = Math.min(1, elapsed / duration);
             const easeT = d3.easeCubicInOut(t);
 
-            // Mix projections
+            const clipT = Math.min(1, t / 0.75);
+            const clipAngle = 179.5 - (179.5 - 90) * d3.easeCubicOut(clipT);
+            const rotateT = t <= 0.35 ? 0 : d3.easeCubicInOut((t - 0.35) / 0.65);
+
             const mixedRawProjection = rawProjectionInterpolate(
                 d3.geoEquirectangularRaw,
                 d3.geoOrthographicRaw,
                 easeT
             );
 
-            // Update projection
             const currentScale = startScale * (1 - easeT) + endScale * easeT;
             const currentRotate = [
-                startRotate[0] * (1 - easeT) + targetRotate[0] * easeT,
-                startRotate[1] * (1 - easeT) + targetRotate[1] * easeT
+                startRotate[0] * (1 - rotateT) + targetRotate[0] * rotateT,
+                startRotate[1] * (1 - rotateT) + targetRotate[1] * rotateT
             ];
+
+            const clipCircle = d3.geoProjection(d3.geoOrthographicRaw)
+                .clipAngle(clipAngle)
+                .preclip();
 
             projection = d3.geoProjection(mixedRawProjection)
                 .scale(currentScale)
                 .translate([width / 2, height / 2])
                 .rotate(currentRotate)
-                .clipAngle(90 + (179.9 - 90) * (1 - easeT))
                 .precision(0.1);
+
+            if (typeof d3.geoClipAntimeridian === 'function') {
+                projection.preclip(sink => d3.geoClipAntimeridian(clipCircle(sink)));
+            } else {
+                projection.clipAngle(clipAngle);
+            }
 
             path.projection(projection);
 
             mapGroup.selectAll("path.country").attr("d", path);
-            // Update Graticule
             gridPath.attr("d", path);
 
             ocean.style("opacity", easeT);
-            gridPath.style("opacity", easeT * 0.3); // Fade in grid slightly
+            gridPath.style("opacity", easeT * 0.3);
 
-            // 5. End of morph
             if (t >= 1) {
                 timer.stop();
 
-                // [Modified] Check if start and end countries are the same
                 if (lastCountry === targetName) {
                     finishArrival(targetName);
                 } else {
@@ -488,9 +496,7 @@
 
         setTimeout(() => {
             intro.style("visibility", "hidden");
-        }, 1000);
-
-        d3.select("#main-content").classed("visible", true);
+        }, 450);
 
         d3.selectAll(".map-tooltip").remove();
 
@@ -510,33 +516,31 @@
 
     window.returnToMap = function () {
         stopTimers();
+        isGlobe = false;
+        d3.selectAll(".map-tooltip").remove();
 
         const intro = d3.select("#intro-page");
-        intro.style("visibility", "visible");
-        intro.style("display", "flex");
+        intro.style("visibility", "visible")
+            .style("display", "flex")
+            .classed("hidden", false)
+            .style("opacity", "0");
 
-        intro.classed("hidden", false);
-        intro.style("opacity", "0");
+        // Render map immediately before cross-fading so there is no blank wait
+        init();
 
         d3.select("#main-content")
-            .transition().duration(500).style("opacity", 0)
+            .transition().duration(250).style("opacity", 0)
             .on("end", () => {
                 d3.select("#main-content")
                     .classed("visible", false)
                     .style("opacity", null);
-
-                intro.transition().duration(500)
-                    .style("opacity", 1)
-                    .on("end", () => {
-                        intro.style("opacity", null);
-                    });
-
-                isGlobe = false;
-                d3.selectAll(".map-tooltip").remove();
-
                 window.scrollTo({ top: 0 });
+            });
 
-                init();
+        intro.transition().duration(250)
+            .style("opacity", 1)
+            .on("end", () => {
+                intro.style("opacity", null);
             });
     };
 
