@@ -1020,6 +1020,7 @@
                             ]
                         },
                         activities: [
+                            { name: "감귤주스 수도꼭지 체험 (에히메의 식탁 1970·공항)", desc: "수도꼭지를 틀면 에히메 특산 품종별 감귤 주스가 콸콸 나오는 마쓰야마 필수 이색 체험", img: "./images/asia_aus/japan/matsuyama/mikan_juice_faucet.jpg" },
                             { name: "봇짱 열차 & 이요테쓰 노면전차 탑승", desc: "증기기관차 모양의 레트로 봇짱 열차를 타고 시내를 달리는 시간여행", img: "./images/asia_aus/japan/matsuyama/botchan_train_matsuyama.jpg" },
                             { name: "마쓰야마 성 1인용 체어 리프트 탑승", desc: "발아래 숲이 펼쳐지는 스릴 있고 시원한 야외 1인 리프트 체험", img: "./images/asia_aus/japan/matsuyama/matsuyama_castle_lift.jpg" },
                             { name: "도고 온천 아스카노유 & 족욕 순례", desc: "아스카 시대 황실 목욕탕을 재현한 온천과 마을 곳곳 무료 족욕 체험", img: "./images/asia_aus/japan/matsuyama/asuka_no_yu_dogo.jpg" },
@@ -1751,7 +1752,9 @@
                             { name: "왓 아룬 (새벽 사원)", desc: "짜오프라야 강변에서 도자기 모자이크 탑이 황금빛으로 빛나는 사원", img: "./images/asia_aus/thailand/bangkok/wat_arun.jpg" },
                             { name: "왓 포 (와불 사원)", desc: "길이 46m의 거대한 황금 와불상과 태국 전통 마사지의 발상지", img: "./images/asia_aus/thailand/bangkok/wat_pho.jpg" },
                             { name: "아이콘시암 (ICONSIAM) & 쑥시암", desc: "실내에 태국 전통 수상시장을 그대로 재현한 초대형 럭셔리 쇼핑몰", img: "./images/asia_aus/thailand/bangkok/iconsiam.jpg" },
-                            { name: "쭛다페어 (Jodd Fairs) 야시장", desc: "랭쌥(화산 등뼈찜)과 과일 스무디로 가득한 방콕 최고 인기 야시장", img: "./images/asia_aus/thailand/bangkok/jodd_fairs.jpg" }
+                            { name: "쭛다페어 (Jodd Fairs) 야시장", desc: "랭쌥(화산 등뼈찜)과 과일 스무디로 가득한 방콕 최고 인기 야시장", img: "./images/asia_aus/thailand/bangkok/jodd_fairs.jpg" },
+                            { name: "담넌사두억 수상시장 (방콕 근교 수상시장)", desc: "운하 위 나룻배를 타고 열대 과일과 팟타이·코코넛 아이스크림을 즐기는 대표 수상시장", img: "./images/asia_aus/thailand/bangkok/damnoen_saduak_floating_market.jpg" },
+                            { name: "매끌렁 기찻길 시장 (Maeklong Railway Market)", desc: "기차가 지나갈 때마다 선로 위 상점 천막을 순식간에 접었다 펴는 이색 기찻길 시장", img: "./images/asia_aus/thailand/bangkok/maeklong_railway_market.jpg" }
                         ],
                         restaurants: [
                             { name: "팁사마이 (Thipsamai)", desc: "얇은 계란 지단으로 감싼 오렌지 주스 조합 원조 팟타이 맛집", img: "./images/asia_aus/thailand/bangkok/thipsamai.jpg" },
