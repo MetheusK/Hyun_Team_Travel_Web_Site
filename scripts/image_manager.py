@@ -274,6 +274,18 @@ def main():
         {'name': 'Marina Bay Sands Singapore', 'desc': 'Singapore skyline', 'img': './images/singapore_main.jpg'},
         {'name': 'Petronas Twin Towers Kuala Lumpur', 'desc': 'Malaysia skyline', 'img': './images/malaysia_main.jpg'},
         {'name': 'Wat Arun Bangkok Thailand', 'desc': 'Thailand landmark skyline', 'img': './images/thailand_main.jpg'},
+        {'name': 'Sagrada Familia Barcelona Spain', 'desc': 'Spain landmark architecture', 'img': './images/spain_main.jpg'},
+        {'name': 'Table Mountain Cape Town South Africa', 'desc': 'South Africa Cape Town skyline', 'img': './images/south_africa_main.jpg'},
+        {'name': 'Machu Picchu Cusco Peru', 'desc': 'Peru Machu Picchu Andes', 'img': './images/peru_main.jpg'},
+        {'name': 'Salar de Uyuni Bolivia', 'desc': 'Bolivia Uyuni salt flats', 'img': './images/bolivia_main.jpg'},
+        {'name': 'Ubud Bali Indonesia Temple', 'desc': 'Bali Indonesia landscape', 'img': './images/indonesia_main.jpg'},
+        {'name': 'Grand Place Brussels Belgium', 'desc': 'Belgium Brussels architecture', 'img': './images/belgium_main.jpg'},
+        {'name': 'Amsterdam Canals Netherlands', 'desc': 'Netherlands Amsterdam canals', 'img': './images/netherlands_main.jpg'},
+        {'name': 'Luxembourg City Grund Old Town', 'desc': 'Luxembourg City scenic view', 'img': './images/luxembourg_main.jpg'},
+        {'name': 'Charles Bridge Prague Czech Republic', 'desc': 'Czechia Prague skyline', 'img': './images/czechia_main.jpg'},
+        {'name': 'Hallstatt Austria Lake', 'desc': 'Austria Hallstatt Alps', 'img': './images/austria_main.jpg'},
+        {'name': 'Lake Bled Slovenia', 'desc': 'Slovenia Lake Bled island', 'img': './images/slovenia_main.jpg'},
+        {'name': 'Dubrovnik Old Town Croatia', 'desc': 'Croatia Dubrovnik coastline', 'img': './images/croatia_main.jpg'},
     ]
     items = hero_items + items
     print(f"Found {len(items)} place image references.")
