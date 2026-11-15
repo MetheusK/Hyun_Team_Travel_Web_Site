@@ -22,9 +22,12 @@
         "일본": "392", "Japan": "392",
         "호주": "036", "Australia": "036",
         "중국": "156", "China": "156",
+        "대만": "158", "Taiwan": "158",
+        "싱가포르": "702", "Singapore": "702",
+        "말레이시아": "458", "Malaysia": "458",
         "필리핀": "608", "Philippines": "608",
         "라오스": "418", "Laos": "418",
-        "타이": "764", "Thailand": "764",
+        "태국": "764", "타이": "764", "Thailand": "764",
         "영국": "826", "United Kingdom": "826",
         "프랑스": "250", "France": "250",
         "이탈리아": "380", "Italy": "380",
@@ -34,7 +37,7 @@
     };
 
     const servicedCountries = [
-        "대한민국", "미국", "일본", "호주", "중국", "필리핀", "라오스",
+        "대한민국", "미국", "일본", "호주", "중국", "대만", "싱가포르", "말레이시아", "태국", "필리핀", "라오스",
         "영국", "프랑스", "이탈리아", "스위스", "독일", "이집트"
     ];
 
@@ -58,6 +61,15 @@
         } else {
             d3.json("https://unpkg.com/world-atlas@2.0.2/countries-110m.json").then(world => {
                 geoData = topojson.feature(world, world.objects.countries);
+                // Add synthetic polygon for Singapore (702) since 110m resolution omits microstates
+                if (!geoData.features.some(f => String(f.id).padStart(3, '0') === "702")) {
+                    geoData.features.push({
+                        type: "Feature",
+                        id: "702",
+                        properties: { name: "Singapore" },
+                        geometry: d3.geoCircle().center([103.8198, 1.3521]).radius(0.8)()
+                    });
+                }
                 renderMap(geoData, tooltip);
             });
         }
@@ -115,6 +127,7 @@
                     if (countryData) {
                         const imgKeys = {
                             "미국": "usa", "일본": "japan", "호주": "australia", "중국": "china", "필리핀": "philippines", "라오스": "laos",
+                            "대만": "taiwan", "싱가포르": "singapore", "말레이시아": "malaysia", "태국": "thailand",
                             "영국": "uk", "프랑스": "france", "이탈리아": "italy", "스위스": "switzerland", "독일": "germany", "이집트": "egypt",
                             "대한민국": "korea"
                         };
@@ -199,7 +212,15 @@
         "프랑스": [2.2137, 46.2276], // Mainland France
         "France": [2.2137, 46.2276],
         "미국": [-95.7129, 37.0902], // Mainland USA (approx)
-        "United States of America": [-95.7129, 37.0902]
+        "United States of America": [-95.7129, 37.0902],
+        "대만": [120.9605, 23.6978],
+        "Taiwan": [120.9605, 23.6978],
+        "싱가포르": [103.8198, 1.3521],
+        "Singapore": [103.8198, 1.3521],
+        "말레이시아": [101.9758, 4.2105],
+        "Malaysia": [101.9758, 4.2105],
+        "태국": [100.9925, 15.8700],
+        "Thailand": [100.9925, 15.8700]
     };
 
     function getCentroid(feature, name) {

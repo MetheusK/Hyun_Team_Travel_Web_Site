@@ -1,7 +1,7 @@
 import re
 import os
 
-FILE_PATH = r"c:\Coding\Webapge\Travel Webpage\index.html"
+FILE_PATH = os.path.join(os.path.dirname(__file__), '../index.html')
 
 def repair_file():
     if not os.path.exists(FILE_PATH):
